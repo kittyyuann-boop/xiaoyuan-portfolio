@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>XIAOYUAN — Visual · Music · Creative · Dance</title>
+<meta name="description" content="Creator working across visual storytelling, music, creative planning and dance. 活跃于影像、音乐、创意策划与舞蹈的创作者。">
+<!-- 本地迭代期防缓存：避免浏览器继续使用改动前的页面 -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link rel="stylesheet" href="style.css?v=20260913-video-cover28">
+</head>
+<body class="lang-en">
+
+<nav id="nav">
+  <a class="logo" href="#/" data-nav>XIAOYUAN<small>VISUAL · MUSIC · CREATIVE · DANCE</small></a>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#/visual"   data-nav data-key="visual"  ></a></li>
+      <li><a href="#/video"    data-nav data-key="video"   ></a></li>
+      <li><a href="#/music"    data-nav data-key="music"   ></a></li>
+      <li><a href="#/creative" data-nav data-key="creative"></a></li>
+      <li><a href="#/dance"    data-nav data-key="dance"   ></a></li>
+      <li><a href="#/about"    data-nav data-key="about"   ></a></li>
+    </ul>
+    <div class="lang-toggle">
+      <button id="langEn">EN</button><button id="langZh">中</button>
+    </div>
+    <button class="burger" id="burger" aria-label="Menu"><i></i><i></i></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#/visual"   data-key="visual"  ></a>
+  <a href="#/video"    data-key="video"   ></a>
+  <a href="#/music"    data-key="music"   ></a>
+  <a href="#/creative" data-key="creative"></a>
+  <a href="#/dance"    data-key="dance"   ></a>
+  <a href="#/about"    data-key="about"   ></a>
+</div>
+
+<main id="app"></main>
+
+<footer>
+  <span>© 2026 XIAOYUAN 徐小媛</span>
+  <span>VISUAL · MUSIC · CREATIVE · DANCE</span>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous">←</button>
+  <img id="lbImg" src="" alt="">
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Next">→</button>
+  <div class="lb-count" id="lbCount"></div>
+  <div class="lb-hint" id="lbHint"></div>
+</div>
+
+<!-- 加载顺序：数据 → 图库清单 → 渲染逻辑。
+     gallery.js 由 tools/build-visual.sh 生成，缺失也不影响其余页面。 -->
+<script src="data.js?v=20260913-video-cover28"></script>
+<script src="assets/visual/gallery.js"></script>
+<script src="app.js?v=20260913-video-cover28"></script>
+</body>
+</html>
