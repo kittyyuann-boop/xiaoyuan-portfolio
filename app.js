@@ -7,7 +7,8 @@
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const app = $('#app');
-let LANG = localStorage.getItem('lang') || 'en';
+let LANG = 'en';
+try { LANG = localStorage.getItem('lang') === 'zh' ? 'zh' : 'en'; } catch (_) {}
 
 // 双语取值：字符串原样返回，对象取当前语言
 const t = o => !o ? '' : (typeof o === 'string' ? o : (o[LANG] || o.en || ''));
@@ -15,11 +16,14 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 
 /* ---------- 语言切换 ---------- */
 function setLang(l) {
-  LANG = l; localStorage.setItem('lang', l);
+  LANG = l === 'zh' ? 'zh' : 'en';
+  try { localStorage.setItem('lang', LANG); } catch (_) {}
+  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
   document.body.className = 'lang-' + l;
   $('#langEn').classList.toggle('on', l === 'en');
   $('#langZh').classList.toggle('on', l === 'zh');
   fillNav();
+  fillFooter();
   route();
 }
 $('#langEn').onclick = () => setLang('en');
@@ -27,6 +31,16 @@ $('#langZh').onclick = () => setLang('zh');
 
 // 用 UI 文案填充所有导航（含移动端菜单）
 function fillNav() { $$('[data-key]').forEach(a => a.textContent = t(UI[a.dataset.key])); }
+
+function fillFooter() {
+  const box = $('#footerLinks');
+  if (!box) return;
+  box.innerHTML = `
+    <a href="${esc(SITE.douyin)}" target="_blank" rel="noopener">DOUYIN</a>
+    <a href="${esc(SITE.xhs)}" target="_blank" rel="noopener">REDNOTE / XIAOHONGSHU</a>
+    <a href="${esc(SITE.bilibili)}" target="_blank" rel="noopener">BILIBILI</a>
+    <a href="mailto:${esc(SITE.email)}">EMAIL</a>`;
+}
 
 /* ---------- 通用块渲染（意向页 / About 共用） ---------- */
 function blockHTML(b) {
@@ -43,6 +57,7 @@ function isPending(text) { return String(text).indexOf('[待补充') === 0 || St
    Home
    ================================================================== */
 function renderHome() {
+  const homeLabel = key => `<b>${esc((UI[key].en || '').toUpperCase())}</b><small>${esc(UI[key].zh || '')}</small>`;
   app.innerHTML = `
   <section class="egg-home" aria-labelledby="eggHomeTitle">
     <h1 class="sr-only" id="eggHomeTitle">${esc(t(SITE.name))} — ${esc(t(SITE.tagline))}</h1>
@@ -59,30 +74,29 @@ function renderHome() {
       <span class="egg-pop egg-pop-music" aria-hidden="true"></span>
       <span class="egg-pop egg-pop-visual" aria-hidden="true"></span>
       <span class="egg-pop egg-pop-dance" aria-hidden="true"></span>
+      <span class="egg-pop egg-pop-about" aria-hidden="true"></span>
       <div class="home-map" aria-hidden="true">
         <span>01 ${esc(t(UI.visual))}</span>
         <span>02 ${esc(t(UI.music))}</span>
-        <span>03 ${esc(t(UI.creative))}</span>
+        <span>03 ${esc(t(UI.planning))}</span>
         <span>04 ${esc(t(UI.dance))}</span>
-      </div>
-      <div class="home-social">
-        <a href="${esc(SITE.xhs)}" target="_blank" rel="noopener">${esc(t(UI.xhs))}</a>
-        <a href="${esc(SITE.bilibili)}" target="_blank" rel="noopener">${esc(t(UI.bilibili))}</a>
-        <a href="${esc(SITE.douyin)}" target="_blank" rel="noopener">${esc(t(UI.douyin))}</a>
-        <a href="mailto:${esc(SITE.email)}">${esc(t(UI.email))}</a>
+        <span>05 ${esc(t(UI.about))}</span>
       </div>
 
-      <a class="egg-link egg-link-creative" href="#/creative" data-home-key="creative">
-        <span class="egg-label"><b>${esc(t(UI.creative))}</b><small>${LANG === 'zh' ? 'IDEAS' : '创意'}</small></span>
+      <a class="egg-link egg-link-planning" href="#/planning" data-home-key="planning">
+        <span class="egg-label">${homeLabel('planning')}</span>
       </a>
       <a class="egg-link egg-link-music" href="#/music" data-home-key="music">
-        <span class="egg-label"><b>${esc(t(UI.music))}</b><small>${LANG === 'zh' ? 'MUSIC' : '音乐'}</small></span>
+        <span class="egg-label">${homeLabel('music')}</span>
       </a>
       <a class="egg-link egg-link-visual" href="#/visual" data-home-key="visual">
-        <span class="egg-label"><b>${esc(t(UI.visual))}</b><small>${LANG === 'zh' ? 'FILM' : '影像'}</small></span>
+        <span class="egg-label">${homeLabel('visual')}</span>
       </a>
       <a class="egg-link egg-link-dance" href="#/dance" data-home-key="dance">
-        <span class="egg-label"><b>${esc(t(UI.dance))}</b><small>${LANG === 'zh' ? 'DANCE' : '舞蹈'}</small></span>
+        <span class="egg-label">${homeLabel('dance')}</span>
+      </a>
+      <a class="egg-link egg-link-about" href="#/about" data-home-key="about">
+        <span class="egg-label">${homeLabel('about')}</span>
       </a>
     </div>
   </section>`;
@@ -193,6 +207,51 @@ function artistName(a) {
   return filled(name) ? name : `${t(UI.artistContent)} ${a.number}`;
 }
 
+let eggTransitionTimers = [];
+let eggTransitionRouting = false;
+
+function cleanupEggTransition() {
+  eggTransitionTimers.forEach(clearTimeout);
+  eggTransitionTimers = [];
+  const overlay = $('.egg-transition-overlay');
+  if (overlay) overlay.remove();
+  document.body.classList.remove('egg-transitioning');
+}
+
+function runEggClickTransition(targetHref, sourceEgg) {
+  cleanupEggTransition();
+  const rect = sourceEgg.getBoundingClientRect();
+  const overlay = document.createElement('div');
+  overlay.className = 'egg-transition-overlay is-select';
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.style.setProperty('--egg-start-x', `${rect.left}px`);
+  overlay.style.setProperty('--egg-start-y', `${rect.top}px`);
+  overlay.style.setProperty('--egg-start-w', `${rect.width}px`);
+  overlay.style.setProperty('--egg-start-h', `${rect.height}px`);
+  overlay.innerHTML = `
+    <div class="egg-transition-scene">
+      <img class="egg-transition-asset egg-transition-whole" src="assets/egg-transition/egg.png" alt="">
+      <img class="egg-transition-asset egg-transition-cracked" src="assets/egg-transition/cracked-egg.png" alt="">
+    </div>`;
+  document.body.appendChild(overlay);
+  document.body.classList.add('egg-transitioning');
+
+  const stage = (name, delay) => eggTransitionTimers.push(setTimeout(() => {
+    overlay.className = `egg-transition-overlay is-${name}`;
+  }, delay));
+  stage('lift', 120);
+  stage('crack', 600);
+  eggTransitionTimers.push(setTimeout(() => {
+    eggTransitionRouting = true;
+    overlay.className = 'egg-transition-overlay is-open';
+    location.hash = targetHref;
+  }, 1180));
+  eggTransitionTimers.push(setTimeout(() => {
+    cleanupEggTransition();
+    eggTransitionRouting = false;
+  }, 1760));
+}
+
 function renderArtistContent() {
   app.innerHTML = `
   <section class="artist-index">
@@ -225,8 +284,7 @@ function bindArtistEggs() {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       e.preventDefault();
       stage.dataset.opening = egg.dataset.artist;
-      egg.classList.add('cracking');
-      setTimeout(() => { location.hash = egg.getAttribute('href'); }, 700);
+      runEggClickTransition(egg.getAttribute('href'), egg.querySelector('.artist-egg-image'));
     });
   });
 }
@@ -249,16 +307,28 @@ function artistAccountsHTML(accounts) {
   </div>`;
 }
 
-function artistProgressionHTML(items) {
+function artistProgressionHTML(items, horizontal=false) {
   if (!items || !items.length) return '';
   return `<div class="artist-progression">
     ${items.map((item, i) => `
-      ${i ? '<span class="artist-progress-arrow">↓</span>' : ''}
+      ${i ? `<span class="artist-progress-arrow">${horizontal ? '→' : '↓'}</span>` : ''}
       <div>
         <b>${esc(t(item.h))}</b>
         <small>${esc(t(item.b))}</small>
       </div>`).join('')}
   </div>`;
+}
+
+function artistSwitchHTML(activeSlug) {
+  return `
+  <nav class="artist-switch" aria-label="Artist case navigation">
+    ${ARTISTS.map(a => `
+      <a class="${a.slug === activeSlug ? 'current' : ''}" href="#/artist/${esc(a.slug)}" aria-current="${a.slug === activeSlug ? 'page' : 'false'}">
+        <span>${a.slug === activeSlug ? '🍳' : '🥚'}</span>
+        <b>${esc(a.number)}</b>
+        <small translate="no">${esc(artistName(a))}</small>
+      </a>`).join('')}
+  </nav>`;
 }
 
 function artistHeroWorkHTML(work) {
@@ -301,7 +371,7 @@ function artistWorksHTML(works) {
     ${works.map((w, i) => `
       <article class="artist-work-card ${w.orientation === 'landscape' ? 'landscape-work' : ''}">
         <div class="artist-work-top">
-          <span class="label">${String(i + 1).padStart(2, '0')} / ${esc(t(w.tag || ''))}</span>
+          <span class="label">${String(i + 1).padStart(2, '0')}${filled(t(w.tag || '')) ? ` / ${esc(t(w.tag))}` : ''}</span>
           <h3>${esc(t(w.title))}</h3>
         </div>
         ${filled(w.video)
@@ -322,7 +392,7 @@ function artistWorksHTML(works) {
 
 function renderStructuredArtistDetail(a) {
   app.innerHTML = `
-  <article class="artist-case-page structured-artist">
+  <article class="artist-case-page structured-artist artist-${esc(a.slug)}">
     <div class="wrap">
       <a class="artist-back" href="#/music">← ${esc(t(UI.artistContent))}</a>
       <header class="artist-case-head">
@@ -360,7 +430,7 @@ function renderStructuredArtistDetail(a) {
               ${i ? '<span class="artist-times">×</span>' : ''}
               <div><b>${esc(t(item.h))}</b><small>${esc(t(item.b))}</small></div>`).join('')}
           </div>
-          ${artistProgressionHTML(a.context.progression)}
+          ${artistProgressionHTML(a.context.progression, a.slug === 'artist-02')}
         </div>
       </section>
 
@@ -399,6 +469,7 @@ function renderStructuredArtistDetail(a) {
           <p class="artist-final-note">${esc(t(a.review.note))}</p>
         </div>
       </section>
+      ${artistSwitchHTML(a.slug)}
     </div>
   </article>`;
 }
@@ -424,7 +495,7 @@ function renderArtistDetail(slug) {
       </header>
 
       <div class="artist-case-grid">
-        <div class="artist-fried-egg" aria-hidden="true">
+        <div class="artist-omelette" aria-hidden="true">
           <img src="assets/home/jiandan-scene.png" alt="">
         </div>
         <div class="artist-case-copy">
@@ -448,6 +519,7 @@ function renderArtistDetail(slug) {
           ${filled(work.artistUrl) ? `<a class="btn ghost" href="${esc(work.artistUrl)}" target="_blank" rel="noopener">${esc(t(UI.viewArtist))} ↗</a>` : ''}
         </div>
       </section>
+      ${artistSwitchHTML(a.slug)}
     </div>
   </article>`;
 }
@@ -473,7 +545,7 @@ function bindCases(scope) {
 }
 
 /* ==================================================================
-   Visual —— 人像 / 风景生活 / 视频作品
+   Visual —— VIDEO / PHOTO：Portrait / Daily
    ================================================================== */
 let vgFilter = 'all';
 
@@ -483,7 +555,7 @@ function vgItems() {
   const a = vg.portrait.map(x => ({ ...x }));
   const b = vg.landscape.map(x => ({ ...x }));
   if (vgFilter === 'portrait')  return a;
-  if (vgFilter === 'landscape') return b;
+  if (vgFilter === 'daily') return b;
   const out = [];
   let i = 0, j = 0;
   while (i < a.length || j < b.length) {
@@ -493,7 +565,14 @@ function vgItems() {
   return out;
 }
 
-function renderVisual() {
+function visualChooserHTML() {
+  return `<div class="visual-chooser" aria-label="Choose a visual discipline">
+    <a class="visual-choice visual-choice-video" href="#/visual/video"><span class="visual-choice-object" aria-hidden="true">▰</span><span class="label">VIDEO</span><strong>Video</strong><small>Selected Works</small></a>
+    <a class="visual-choice visual-choice-photo" href="#/visual/photo"><span class="visual-choice-object" aria-hidden="true">◉</span><span class="label">PHOTOGRAPHY</span><strong>Photography</strong><small>Portrait / Daily</small></a>
+  </div>`;
+}
+
+function renderVisual(mode='chooser') {
   const vg = window.VISUAL_GALLERY;
   const nP = vg ? vg.portrait.length : 0;
   const nL = vg ? vg.landscape.length : 0;
@@ -505,27 +584,18 @@ function renderVisual() {
         <span class="label">01 — ${esc(t(UI.visual))}</span>
         <h1 class="display">${esc(t(PANELS.visual.lede))}</h1>
       </div>
-      ${PANELS.visual.blocks.map(blockHTML).join('')}
+      ${mode === 'chooser' ? visualChooserHTML() : ''}
+      ${mode === 'video' ? videoWorksSectionHTML() : ''}
 
-      <div class="sect archive">
-        <h3>${esc(t(UI.portraits))} · ${esc(t(UI.landscape))}</h3>
+      <div class="sect archive" ${mode === 'photo' ? '' : 'hidden'}>
+        <h3>${esc(t(UI.photo))}</h3>
         <p class="body">${esc(t(UI.archiveNote))}</p>
         <div class="filters" id="vgFilters">
           <button data-g="all">${esc(t(UI.allPhotos))} · ${nP + nL}</button>
           <button data-g="portrait">${esc(t(UI.portraits))} · ${nP}</button>
-          <button data-g="landscape">${esc(t(UI.landscape))} · ${nL}</button>
-          <button data-g="video">${esc(t(UI.video))}</button>
+          <button data-g="daily">${esc(t(UI.daily))} · ${nL}</button>
         </div>
         <div class="masonry" id="masonry"></div>
-        <div id="videoSlot" hidden>
-          <div class="sect">
-            <h3>${esc(t(UI.videoContent))}</h3>
-            <p class="body">${esc(t(UI.videoMoved))}</p>
-            <div class="links-row" style="margin-top:24px">
-              <a class="btn" href="#/video">${esc(t(UI.videoContent))} →</a>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </section>`;
@@ -541,6 +611,8 @@ function renderVisual() {
     };
   });
   renderMasonry();
+  bindVideoFilters(app);
+  bindTypographyReveal(app);
 }
 
 let vgIO = null;
@@ -550,10 +622,7 @@ function renderMasonry() {
   const slot = $('#videoSlot');
   const items = vgItems();
 
-  if (vgFilter === 'video') {
-    box.innerHTML = ''; box.hidden = true; slot.hidden = false; return;
-  }
-  box.hidden = false; slot.hidden = true;
+  box.hidden = false;
 
   box.innerHTML = items.map((g, i) => {
     // 按原始比例显示：只给宽度、高度自适应，不做裁切填充
@@ -561,7 +630,7 @@ function renderMasonry() {
     const scale = 1000 / Math.max(g.w, g.h);
     const tw = Math.max(1, Math.round(g.w * scale));
     return `
-    <figure class="mitem" data-i="${i}" style="aspect-ratio:${g.w}/${g.h};transition-delay:${Math.min(i % 8, 7) * 60}ms">
+    <figure class="mitem" role="button" tabindex="0" aria-label="${esc(t(UI.openPhoto))} ${i + 1}" data-i="${i}" style="aspect-ratio:${g.w}/${g.h};transition-delay:${Math.min(i % 8, 7) * 60}ms">
       <img src="assets/visual/${g.t}"
            srcset="assets/visual/${g.t} ${tw}w, assets/visual/${g.f} ${g.w}w"
            sizes="(max-width:900px) 50vw, 33vw"
@@ -585,6 +654,9 @@ function renderMasonry() {
 
   cells.forEach(el => {
     el.onclick = () => openLightbox(items.map(g => 'assets/visual/' + g.f), +el.dataset.i);
+    el.onkeydown = e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+    };
   });
 }
 
@@ -629,15 +701,16 @@ function navSiblings(key) {
    About
    ================================================================== */
 function renderAbout() {
+  const hasPortrait = filled(SITE.portrait);
   app.innerHTML = `
   <section class="block panel">
     <div class="wrap">
-      <div class="about-grid">
-        <div>
+      <div class="about-grid ${hasPortrait ? '' : 'no-portrait'}">
+        ${hasPortrait ? `<div>
           <div class="about-portrait">
-            ${SITE.portrait ? `<img src="${esc(SITE.portrait)}" alt="">` : `<div class="ph">[PORTRAIT]</div>`}
+            <img src="${esc(SITE.portrait)}" alt="">
           </div>
-        </div>
+        </div>` : ''}
         <div class="about-text">
           <span class="label">${esc(t(UI.about))}</span>
           <h1 class="display">${esc(t(ABOUT.lede))}</h1>
@@ -645,10 +718,10 @@ function renderAbout() {
 
           <div class="sect">
             <h3>${esc(t(UI.resume))}</h3>
-            <p class="body">${esc(t(UI.resumeHint))}</p>
+            <p class="body">${esc(t(SITE.resume ? UI.resumeReady : UI.resumeHint))}</p>
             <div class="links-row" style="margin-top:20px">
-              <a class="btn" href="${esc(SITE.resume)}" target="_blank">${esc(t(UI.viewResume))} ↗</a>
-              <a class="btn ghost" href="${esc(SITE.resume)}" download>${esc(t(UI.download))} ↓</a>
+              ${SITE.resume ? `<a class="btn" href="${esc(SITE.resume)}" target="_blank" rel="noopener">${esc(t(UI.viewResume))} ↗</a>
+              <a class="btn ghost" href="${esc(SITE.resume)}" download>${esc(t(UI.download))} ↓</a>` : `<a class="btn ghost" href="mailto:${esc(SITE.email)}">${esc(t(UI.contact))} ↗</a>`}
             </div>
           </div>
 
@@ -668,7 +741,7 @@ function renderAbout() {
 }
 
 /* ==================================================================
-   Video & Content —— 个人视频作品（8 个，全部独立完成）
+   Video —— VISUAL 内的个人影像 Selected Works
    封面策略：只用本地 cover/video 字段，留空即显示统一占位，
    绝不抓取小红书 / B站缩略图。不展示任何未确认的数据。
    ================================================================== */
@@ -693,22 +766,12 @@ function videoLinksHTML(w, cardMode) {
   ).join('');
 }
 
-function renderVideoContent() {
+function videoWorksSectionHTML() {
   const featured = VIDEO_WORKS.filter(w => w.featured);
-  /* 重点作品同时保留大版式与分类卡片：网格展示全部作品，确保各类目筛选完整 */
-  const rest = VIDEO_WORKS;
-  const catLabel = key => { const c = VIDEO_CATEGORIES.find(c => c.key === key); return c ? t(c.label) : key; };
-
-  app.innerHTML = `
-  <section class="block panel video-page">
-    <div class="wrap">
-      <div class="panel-head">
-        <span class="label">${esc(t(UI.videoContent))}</span>
-        <h1 class="display">${LANG === 'zh'
-          ? '从想法到成片 —— 每支视频都由我独立完成。'
-          : 'From idea to final cut — every video made on my own.'}</h1>
-      </div>
-
+  const rest = VIDEO_WORKS.filter(w => !w.featured);
+  return `
+      <div class="sect video-page visual-video">
+        <h3>VIDEO</h3>
       <div class="video-pipeline" aria-label="Idea, Planning, Shooting, Editing, Final cut">
         <span class="label">IDEA</span><span class="video-pipe-arrow">→</span>
         <span class="label">PLANNING</span><span class="video-pipe-arrow">→</span>
@@ -717,14 +780,18 @@ function renderVideoContent() {
         <span class="label">FINAL CUT</span>
       </div>
 
-      <div class="sect video-featured-sect">
-        <h3>${esc(t(UI.featuredWork))}</h3>
+      <div class="filters" id="vwFilters">
+        <button data-g="all" class="on">${esc(t(UI.viewAllFilter))}</button>
+        ${VIDEO_CATEGORIES.map(c => `<button data-g="${c.key}">${esc(t(c.label))}</button>`).join('')}
+      </div>
+      <div class="video-featured-sect">
+        <h4 class="subhead">${esc(t(UI.selectedVideos))}</h4>
         ${featured.map((w, i) => {
           const mr = w.mediaRatio || '16/9';
           const [mw, mh] = mr.split('/').map(Number);
           const portrait = mh > mw;
           return `
-        <article class="vfeat ${i % 2 ? 'flip' : ''}${portrait ? ' portrait' : ''}">
+        <article class="vfeat ${i % 2 ? 'flip' : ''}${portrait ? ' portrait' : ''}" data-cat="${esc(w.category)}">
           <div class="vfeat-media" style="aspect-ratio:${esc(mr)}">${videoCoverHTML(w, 'vfeat-cover')}</div>
           <div class="vfeat-copy">
             <span class="label">${String(i + 1).padStart(2, '0')} — ${esc(t(w.type))}</span>
@@ -741,55 +808,104 @@ function renderVideoContent() {
         </article>`; }).join('')}
       </div>
 
-      <div class="sect">
-        <h3>${esc(t(UI.selectedVideos))}</h3>
-        <div class="filters" id="vwFilters">
-          <button data-g="all" class="on">${esc(t(UI.viewAllFilter))}</button>
-          ${VIDEO_CATEGORIES.map(c => `<button data-g="${c.key}">${esc(t(c.label))}</button>`).join('')}
-        </div>
+      <div class="video-selected-sect">
         <div class="vgrid" id="vgrid">
-          ${rest.map(w => `
-          <article class="vcard" data-cat="${esc(w.category)}">
-            <div class="vcard-media" style="aspect-ratio:${esc(w.ratio || '4/3')}">${videoCoverHTML(w, 'vcard-cover')}</div>
-            <h3>${esc(t(w.title))}</h3>
-            <span class="label">${esc(t(w.type))}</span>
-            <div class="chips">${(w.focus || []).slice(0, 3).map(f => `<span class="chip">${esc(t(f))}</span>`).join('')}</div>
-            <div class="vcard-foot">
-              <span class="vcard-platform">${esc(PLATFORM_LABEL[w.platform] || w.platform)}</span>
-              <span class="vcard-links">${videoLinksHTML(w, true)}</span>
+          ${rest.map((w, i) => {
+            const ratio = w.ratio || '4/3';
+            const [rw, rh] = ratio.split('/').map(Number);
+            const portrait = rh > rw;
+            return `
+          <article class="vcard ${i % 2 ? 'flip' : ''}${portrait ? ' portrait' : ''}" data-cat="${esc(w.category)}">
+            <div class="vcard-media" style="aspect-ratio:${esc(ratio)}">${videoCoverHTML(w, 'vcard-cover')}</div>
+            <div class="vcard-copy">
+              <span class="label">${String(i + 1).padStart(2, '0')} — ${esc(t(w.type))}</span>
+              <h3>${esc(t(w.title))}</h3>
+              ${LANG === 'en' && w.titleEn ? `<p class="vfeat-titleen">${esc(w.titleEn)}</p>` : ''}
+              ${filled(t(w.intro || '')) ? `<p class="body">${esc(t(w.intro))}</p>` : ''}
+              <div class="chips">${(w.focus || []).map(f => `<span class="chip">${esc(t(f))}</span>`).join('')}</div>
+              <div class="artist-role-block">
+                <span class="label">${esc(t(UI.myRole))}</span>
+                <p>${esc(t(UI.vrole))}</p>
+              </div>
+              <div class="vcard-foot">
+                <span class="vcard-platform">${esc(PLATFORM_LABEL[w.platform] || w.platform)}</span>
+                <span class="vcard-links">${videoLinksHTML(w, true)}</span>
+              </div>
             </div>
-          </article>`).join('')}
+          </article>`; }).join('')}
         </div>
       </div>
-    </div>
-  </section>`;
+      <section class="video-more reveal" aria-labelledby="videoMoreTitle">
+        <span class="label">SEE MORE / SOCIAL</span>
+        <h2 id="videoMoreTitle">${LANG === 'zh' ? '想看更多？去我的社交媒体看看。' : 'WANT TO SEE MORE?'}</h2>
+        <p class="body">${LANG === 'zh' ? '更多作品，可以在这里找到我。' : 'More work lives on my social channels.'}</p>
+        <div class="video-social-cards">
+          <a href="${esc(SITE.douyin)}" target="_blank" rel="noopener">DOUYIN <span>↗</span></a>
+          <a href="${esc(SITE.xhs)}" target="_blank" rel="noopener">REDNOTE <span>↗</span></a>
+          <a href="${esc(SITE.bilibili)}" target="_blank" rel="noopener">BILIBILI <span>↗</span></a>
+          <a href="mailto:${esc(SITE.email)}">EMAIL <span>↗</span></a>
+        </div>
+      </section>
+      </div>`;
+}
 
-  const btns = $$('#vwFilters button');
+let typoIO = null;
+function bindTypographyReveal(scope=document) {
+  const items = [...scope.querySelectorAll('.display, .panel-head .label, .sect > h3, .sect > .body, .video-more, .vcard, .vfeat, .artist-story-section')];
+  items.forEach((el,i) => { el.classList.add('reveal'); el.style.setProperty('--reveal-delay', `${Math.min(i,8)*55}ms`); });
+  if (typoIO) typoIO.disconnect();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) { items.forEach(el=>el.classList.add('revealed')); return; }
+  typoIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); typoIO.unobserve(e.target); } }), {rootMargin:'0px 0px -8%'});
+  items.forEach(el=>typoIO.observe(el));
+}
+
+function bindVideoFilters(scope) {
+  const btns = [...scope.querySelectorAll('#vwFilters button')];
+  const cards = [...scope.querySelectorAll('.video-page article[data-cat]')];
+  const sections = [...scope.querySelectorAll('.video-featured-sect, .video-selected-sect')];
+  vwFilter = 'all';
   btns.forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.g === vwFilter));
     b.onclick = () => {
       vwFilter = b.dataset.g;
-      btns.forEach(x => x.classList.toggle('on', x === b));
-      $$('#vgrid .vcard').forEach(card => {
+      btns.forEach(x => {
+        x.classList.toggle('on', x === b);
+        x.setAttribute('aria-pressed', String(x === b));
+      });
+      cards.forEach(card => {
         card.hidden = vwFilter !== 'all' && card.dataset.cat !== vwFilter;
+        if (card.hidden) card.querySelectorAll('video').forEach(video => video.pause());
+      });
+      sections.forEach(section => {
+        section.hidden = ![...section.querySelectorAll('article[data-cat]')].some(card => !card.hidden);
       });
     };
   });
+}
+
+function renderVideoContent() {
+  location.replace('#/visual');
 }
 
 
 /* ==================================================================
    路由
    ================================================================== */
-const ROUTES = { visual:renderVisual, music:renderArtistContent, video:renderVideoContent, creative:()=>renderPanel('creative'),
+const ROUTES = { visual:()=>renderVisual('chooser'), 'visual/video':()=>renderVisual('video'), 'visual/photo':()=>renderVisual('photo'), music:renderArtistContent, planning:()=>renderPanel('planning'),
+                 creative:()=>{ location.replace('#/planning'); }, video:renderVideoContent,
                  dance:()=>renderPanel('dance'), about:renderAbout };
 
 function route() {
+  closeLightbox();
+  if (vgIO) vgIO.disconnect();
+  if (!eggTransitionRouting) cleanupEggTransition();
   const key = (location.hash || '#/').replace('#/', '');
   const artistSlug = key.startsWith('artist/') ? key.split('/')[1] : '';
   document.body.dataset.route = artistSlug ? 'artist' : (ROUTES[key] ? key : 'home');
   $$('[data-nav][data-key]').forEach(a => a.classList.remove('active'));
   $('#mobileMenu').classList.remove('open');
   $('#burger').classList.remove('open');
+  $('#burger').setAttribute('aria-expanded', 'false');
   if (artistSlug) {
     renderArtistDetail(artistSlug);
     const a = $('[data-nav][data-key="music"]');
@@ -801,6 +917,7 @@ function route() {
   } else {
     renderHome();
   }
+  bindTypographyReveal(app);
   scrollTo(0, 0);
 }
 addEventListener('hashchange', route);
@@ -809,6 +926,7 @@ addEventListener('hashchange', route);
 $('#burger').onclick = () => {
   $('#mobileMenu').classList.toggle('open');
   $('#burger').classList.toggle('open');
+  $('#burger').setAttribute('aria-expanded', String($('#mobileMenu').classList.contains('open')));
 };
 
 /* ---------- 导航滚动态 ---------- */
@@ -818,20 +936,34 @@ addEventListener('scroll', () => $('#nav').classList.toggle('scrolled', scrollY 
    灯箱（← → 切换 / Esc 关闭 / 点击空白关闭）
    ================================================================== */
 const lb = $('#lightbox'), lbImg = $('#lbImg');
-let lbList = [], lbIndex = 0;
+let lbList = [], lbIndex = 0, lbReturnFocus = null;
 
 function showLb() {
   lbImg.classList.remove('zoom'); void lbImg.offsetWidth;
   lbImg.src = lbList[lbIndex];
+  lbImg.alt = `${t(UI.openPhoto)} ${lbIndex + 1}`;
   $('#lbCount').textContent = lbList.length > 1 ? `${lbIndex + 1} / ${lbList.length}` : '';
   [lbIndex + 1, lbIndex - 1].forEach(i => { if (lbList[i]) { const im = new Image(); im.src = lbList[i]; } });
 }
 function openLightbox(list, idx) {
+  lbReturnFocus = document.activeElement;
   lbList = list; lbIndex = idx; showLb();
+  $('#lbClose').setAttribute('aria-label', t(UI.close));
+  $('#lbPrev').setAttribute('aria-label', t(UI.previous));
+  $('#lbNext').setAttribute('aria-label', t(UI.next));
+  lb.setAttribute('aria-label', t(UI.openPhoto));
   $('#lbHint').textContent = t(UI.lbHint);
   lb.classList.add('open'); document.body.style.overflow = 'hidden';
+  [...document.body.children].forEach(el => { if (el !== lb && el.tagName !== 'SCRIPT') el.inert = true; });
+  $('#lbClose').focus();
 }
-function closeLightbox() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+function closeLightbox() {
+  if (!lb.classList.contains('open')) return;
+  lb.classList.remove('open'); document.body.style.overflow = '';
+  [...document.body.children].forEach(el => { if (el !== lb) el.inert = false; });
+  if (lbReturnFocus && lbReturnFocus.isConnected) lbReturnFocus.focus({preventScroll:true});
+}
+$('#lbClose').onclick = closeLightbox;
 function lbStep(d) {
   if (lbList.length < 2) return;
   lbIndex = (lbIndex + d + lbList.length) % lbList.length; showLb();
@@ -841,6 +973,12 @@ $('#lbPrev').onclick = e => { e.stopPropagation(); lbStep(-1); };
 $('#lbNext').onclick = e => { e.stopPropagation(); lbStep(1); };
 addEventListener('keydown', e => {
   if (!lb.classList.contains('open')) return;
+  if (e.key === 'Tab') {
+    const buttons = [...lb.querySelectorAll('button')];
+    const first = buttons[0], last = buttons[buttons.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
   if (e.key === 'Escape') closeLightbox();
   else if (e.key === 'ArrowRight') lbStep(1);
   else if (e.key === 'ArrowLeft')  lbStep(-1);

@@ -9,15 +9,15 @@
 /* ---------- 1. 站点基本信息 ---------- */
 const SITE = {
   name:      { en:'XIAOYUAN', zh:'徐小媛' },
-  tagline:   { en:'Visual · Music · Creative · Dance', zh:'影像 · 音乐 · 创意 · 舞蹈' },
-  intro:     { en:'Creator working across visual storytelling, music, creative planning and dance.',
-               zh:'活跃于影像、音乐、创意策划与舞蹈的创作者。' },
+  tagline:   { en:'Visual · Music · Planning · Dance', zh:'影像 · 音乐 · 策划 · 舞蹈' },
+  intro:     { en:'Creator working across visual storytelling, music projects, planning and dance.',
+               zh:'活跃于影像、音乐项目、策划与舞蹈的创作者。' },
   email:     '2952919277@qq.com',
   bilibili:  'https://b23.tv/V9etBII',
   xhs:       'https://xhslink.cn/o/8NfGdFO6KJ5',
   douyin:    'https://v.douyin.com/aCGdNvOpSUc/',
   danceAcc:  '[DANCE ACCOUNT LINK]',
-  resume:    'assets/resume.pdf',
+  resume:    '',
   portrait:  '',            // About 页人像：把图片放进 assets/ 后写路径，如 'assets/portrait.jpg'
 };
 
@@ -25,7 +25,8 @@ const SITE = {
 const UI = {
   visual:   { en:'Visual',   zh:'影像' },
   music:    { en:'Music',    zh:'音乐' },
-  creative: { en:'Creative', zh:'创意' },
+  planning: { en:'Planning', zh:'策划' },
+  creative: { en:'Planning', zh:'策划' },
   dance:    { en:'Dance',    zh:'舞蹈' },
   about:    { en:'About',    zh:'关于' },
 
@@ -33,19 +34,25 @@ const UI = {
   allPhotos: { en:'All',   zh:'全部' },
   portraits: { en:'Portraits',       zh:'人像' },
   landscape: { en:'Landscape & Life',zh:'风景生活' },
-  video:     { en:'Video',           zh:'视频作品' },
+  video:     { en:'Video',           zh:'视频' },
 
   archiveNote:{ en:'Photos taken with my phone — arranged as a full archive, lazy-loaded. Click any photo to enlarge, use ← → to move through the set.',
                 zh:'全部为手机拍摄的日常影像，完整展示并做了懒加载。点击任意照片可放大，← → 可翻阅。' },
-  videoEmpty: { en:'Video work is being sorted — Vlogs, musician short videos and edits will live here. Meanwhile you can find my channels below.',
-                zh:'视频作品整理中 —— Vlog、音乐人短视频与剪辑作品之后会放在这里。在此之前可先去下方账号看看。' },
-  lbHint:     { en:'Click anywhere to close · ← → to navigate', zh:'点击任意处关闭 · ← → 切换' },
+  videoEmpty: { en:'Selected personal videos are being sorted. Meanwhile you can find my channels below.',
+                zh:'个人影像代表作品整理中。在此之前可先去下方账号看看。' },
+  lbHint:     { en:'Click outside the photo or press Esc to close · ← → to navigate', zh:'点击照片外或按 Esc 关闭 · ← → 切换' },
 
+  openPhoto: { en:'View photo', zh:'查看照片' },
+  close: { en:'Close', zh:'关闭' },
+  previous: { en:'Previous photo', zh:'上一张' },
+  next: { en:'Next photo', zh:'下一张' },
+  resume: { en:'Resume', zh:'简历' },
+  resumeReady: { en:'View or download my resume.', zh:'在线查看或下载我的简历。' },
   channels:   { en:'Channels', zh:'我的账号' },
   viewResume: { en:'View Resume', zh:'查看简历' },
   download:   { en:'Download PDF', zh:'下载 PDF' },
-  resumeHint: { en:'Resume placeholder — replace assets/resume.pdf with your real file.',
-                zh:'简历占位 —— 把 assets/resume.pdf 换成你的真实简历文件。' },
+  resumeHint: { en:'Resume is being prepared. Please email me to get in touch.',
+                zh:'简历整理中，欢迎通过邮件联系我。' },
   contact:    { en:'Get in touch', zh:'联系我' },
   bilibili:   { en:'Bilibili',     zh:'哔哩哔哩' },
   xhs:        { en:'Xiaohongshu',  zh:'小红书' },
@@ -79,26 +86,32 @@ const UI = {
   approach: { en:'Approach', zh:'方法' },
   workResult: { en:'Work & Result', zh:'作品与结果' },
   review: { en:'Review', zh:'复盘' },
-  videoContent: { en:'Video & Content', zh:'视频与内容' },
-  videoMoved: { en:'My personal videos now live on their own page — short vlogs, long vlogs, talk and concept work.',
-                zh:'个人视频作品已独立成页 —— 短 Vlog、长 Vlog、口播与概念型内容。' },
+  videoContent: { en:'Video', zh:'视频' },
+  videoMoved: { en:'My personal videos now live inside Visual — Vlog / Narrative, Talking / Expression and Concept / Creative.',
+                zh:'个人影像内容已归入 VISUAL —— Vlog / 叙事、口播 / 表达、概念 / 创意。' },
   featuredWork: { en:'Featured Work', zh:'重点作品' },
-  selectedVideos:{ en:'Selected Videos', zh:'更多作品' },
+  selectedVideos:{ en:'Selected Works', zh:'代表作品' },
   coverPending: { en:'Cover pending', zh:'封面待补' },
   vrole: { en:'Concept · Planning · Shooting · Editing', zh:'独立策划 · 拍摄 · 剪辑' },
   viewAllFilter: { en:'All', zh:'全部' },
+  photo: { en:'Photo', zh:'摄影' },
+  daily: { en:'Daily', zh:'日常' },
+  letsConnect: { en:"Let's Connect", zh:'保持联系' },
+  rednote: { en:'Rednote / Xiaohongshu', zh:'小红书' },
 };
 
-/* ---------- 3. 首页四个板块入口 ---------- */
+/* ---------- 3. 首页五个板块入口 ---------- */
 const ENTRIES = [
   { key:'visual',   num:'01', title:UI.visual,   note:{ en:'People, everyday life, video — shot and edited by me',
                                                         zh:'人像、日常、视频 —— 自己拍也自己剪' } },
-  { key:'music',    num:'02', title:UI.music,    note:{ en:'Music background, projects, and what I want to make',
-                                                        zh:'音乐背景、参与过的项目，以及想做的音乐' } },
-  { key:'creative', num:'03', title:UI.creative, note:{ en:'Content planning, artist positioning, campaigns',
-                                                        zh:'内容策划、艺人定位、营销企划' } },
+  { key:'music',    num:'02', title:UI.music,    note:{ en:'Musician content projects and artist case studies',
+                                                        zh:'音乐人内容项目与艺人案例' } },
+  { key:'planning', num:'03', title:UI.planning, note:{ en:'Content, account, activity and project planning',
+                                                        zh:'内容、账号、活动与项目策划' } },
   { key:'dance',    num:'04', title:UI.dance,    note:{ en:'Choreography, stage work, competition pieces',
                                                         zh:'编舞、舞台、比赛作品' } },
+  { key:'about',    num:'05', title:UI.about,    note:{ en:'Profile, experience, skills and contact',
+                                                        zh:'个人介绍、经历、技能与联系' } },
 ];
 
 /* ---------- 4. 四个板块页内容 ----------
@@ -113,13 +126,12 @@ const PANELS = {
 
   visual: {
     lede:{ en:'Photography and video I made myself — mostly with a phone.',
-           zh:'自己拍摄的影像与视频，多数用手机完成。' },
+           zh:'自己拍摄的影像与视频。' },
     blocks:[
       { h:{ en:'What You See Here', zh:'这里有什么' },
         list:[
-          { en:'Portraits — friends, everyday moments', zh:'人像 —— 朋友、日常' },
-          { en:'Landscape & Life — scenes, streets, travel', zh:'风景生活 —— 场景、街道、旅途' },
-          { en:'Video — work in progress', zh:'视频作品 —— 整理中' },
+          { en:'Video — selected personal works', zh:'视频 —— 个人代表作品' },
+          { en:'Photo — portrait and daily archive', zh:'摄影 —— 人像与日常影像存档' },
         ] },
       { h:{ en:'How I Shoot', zh:'我怎么拍' },
         chips:['Available light','Everyday moments','Composition','Cutting rhythm'] },
@@ -139,29 +151,23 @@ const PANELS = {
 
   /* Creative —— 内容基于站内已有的四位音乐人真实案例，不引入任何虚构经历。
      cta：底部按钮，跳转到音乐人内容案例索引（#/music）。 */
-  creative: {
-    lede:{ en:'I plan content for musicians — and four real cases are on this site.',
-           zh:'我做音乐人内容策划 —— 这个站里就有四个真实案例。' },
+  planning: {
+    lede:{ en:'Planning is where ideas become structure, rhythm and execution.',
+           zh:'策划是把想法变成结构、节奏和执行路径。' },
     blocks:[
-      { h:{ en:'What This Work Looks Like', zh:'这项工作具体做什么' },
+      { h:{ en:'What This Section Is For', zh:'这个栏目放什么' },
         list:[
-          { en:'Artist positioning & visual direction — find what only this artist can amplify', zh:'艺人定位与视觉方向 —— 找到只有这个艺人最值得放大的部分' },
-          { en:'Shooting & editing short vertical videos — planning on set, light edit in post', zh:'短视频拍摄与剪辑 —— 现场执行策划，后期保持轻剪辑' },
-          { en:'Publishing & review — release timing, then looking back at what worked and why', zh:'发布与复盘 —— 安排发布节奏，回看数据与内容效果' },
-          { en:'Artist assistant work — day-to-day coordination on established accounts', zh:'艺人助理工作 —— 在成熟账号上做日常内容执行与协调' },
+          { en:'Activity planning', zh:'活动策划' },
+          { en:'Content planning', zh:'内容策划' },
+          { en:'Account planning', zh:'账号策划' },
+          { en:'Project planning and case studies', zh:'项目策划与 Case Study' },
         ] },
-      { h:{ en:'How I Think About It', zh:'我的做法' },
-        body:{ en:'Start from what the artist already has — voice, look, personality — instead of inventing a persona. Then build the visual and content language around that core, and keep the edit light enough that the person stays the subject.',
-               zh:'从艺人本来就拥有的东西出发 —— 声音、妆造、个性 —— 而不是重新创造一个人设。再围绕这个核心搭建视觉和内容语言，剪辑保持克制，让人始终是画面主体。' } },
-      { h:{ en:'Experience So Far', zh:'目前做过什么' },
-        body:{ en:'Four musician accounts across different stages: a mature account (Sophie, artist assistant), a development project (Chen Qingyu), a retro-style musician (TETE), and a livehouse singer with two Douyin accounts (加一 / 减一). Each case page includes context, approach, work and my own review.',
-               zh:'四位处于不同阶段的音乐人：成熟账号的艺人助理工作（大表哥 Sophie）、系统开发期的项目（陈黥语）、复古风格音乐人（忒忒）、双账号运营的现场演出歌手（加一 / 减一）。每个案例页都包含背景、方法、作品与我的复盘。' } },
+      { h:{ en:'Principle', zh:'归属原则' },
+        body:{ en:'Each project should live in the section where it is easiest to understand. Personal visual works stay in Visual; musician content projects stay in Music; planning case studies will live here when the materials are ready.',
+               zh:'每个项目放在最容易被理解的栏目里。个人视觉作品归入影像；音乐人内容项目归入音乐；之后有完整策划材料的 Case Study 再放在这里。' } },
     ],
-    cta:{
-      href:'#/music',
-      label:{ en:'View the 4 artist cases', zh:'查看 4 个音乐人案例' },
-    },
   },
+  creative: null,
 
   dance: {
     lede:{ en:'[待补充 —— 一句话说清你的舞蹈方向]', zh:'[待补充 —— 一句话说清你的舞蹈方向]' },
@@ -175,7 +181,7 @@ const PANELS = {
 };
 
 /* ---------- 6. 音乐人视频案例 ----------
-   说明：一份数据，两处展示 —— Music 页内展开/折叠，Visual 的「视频作品」组
+   说明：一份数据，两处展示 —— Music 页内展开/折叠，Visual 的「VIDEO / Selected Works」组
         也用同一份数据渲染。加新案例就复制一段，改字段即可。
    字段：
      title          项目名（署名信息先留空，等确认可公开后再填）
@@ -327,8 +333,8 @@ const ARTISTS = [
     workTitle:{ en:'SELECTED WORK', zh:'代表作品' },
     productionNote:{ en:'', zh:'' },
     works:[
-      { title:{ en:'VIDEO 01', zh:'视频 01' }, tag:{ en:'HALF-FACE CLOSE-UP', zh:'半脸近景' }, likes:{ en:'19K Likes · 2,323 Shares · 1,268 Saves · 385 Comments', zh:'1.9万点赞 · 2323 分享 · 1268 收藏 · 385 评论' }, role:{ en:'Content Planning / Shooting / Editing', zh:'内容策划 / 拍摄 / 剪辑' }, video:'assets/artist-content/chenqingyu/work-01.mp4', orientation:'landscape', proofImage:'assets/artist-content/chenqingyu/work-01-proof.png', originalUrl:'', artistUrl:'' },
-      { title:{ en:'VIDEO 02', zh:'视频 02' }, tag:{ en:'NATURAL PERFORMANCE', zh:'自然镜头表现' }, likes:{ en:'13K Likes · 1,343 Shares · 447 Saves · 147 Comments', zh:'1.3万点赞 · 1343 分享 · 447 收藏 · 147 评论' }, role:{ en:'Content Planning / Shooting / Editing', zh:'内容策划 / 拍摄 / 剪辑' }, video:'assets/artist-content/chenqingyu/work-02.mp4', orientation:'landscape', proofImage:'assets/artist-content/chenqingyu/work-02-proof.png', originalUrl:'', artistUrl:'' },
+      { title:{ en:'VIDEO 01', zh:'视频 01' }, tag:{ en:'', zh:'' }, likes:{ en:'19K Likes · 2,323 Shares · 1,268 Saves · 385 Comments', zh:'1.9万点赞 · 2323 分享 · 1268 收藏 · 385 评论' }, role:{ en:'Content Planning / Shooting / Editing', zh:'内容策划 / 拍摄 / 剪辑' }, video:'assets/artist-content/chenqingyu/work-01.mp4', orientation:'landscape', proofImage:'assets/artist-content/chenqingyu/work-01-proof.png', originalUrl:'', artistUrl:'' },
+      { title:{ en:'VIDEO 02', zh:'视频 02' }, tag:{ en:'', zh:'' }, likes:{ en:'13K Likes · 1,343 Shares · 447 Saves · 147 Comments', zh:'1.3万点赞 · 1343 分享 · 447 收藏 · 147 评论' }, role:{ en:'Content Planning / Shooting / Editing', zh:'内容策划 / 拍摄 / 剪辑' }, video:'assets/artist-content/chenqingyu/work-02.mp4', orientation:'landscape', proofImage:'assets/artist-content/chenqingyu/work-02-proof.png', originalUrl:'', artistUrl:'' },
     ],
     review:{
       kicker:{ en:'WHAT I LEARNED', zh:'我学到的事' },
@@ -476,40 +482,40 @@ const ARTISTS = [
   },
 ];
 
-/* ---------- 9. VIDEO & CONTENT —— 个人视频作品 ----------
+/* ---------- 9. VIDEO —— VISUAL 内的个人影像 Selected Works ----------
    8 个作品，全部由本人独立完成（Concept / Planning / Shooting / Editing）。
-   分类只按内容形式：short-vlog / long-vlog / talk / concept；平台仅作信息与跳转。
+   分类只按内容形式：Vlog / Narrative、Talking / Expression、Concept / Creative；平台仅作信息与跳转。
    featured:true 的作品在页面顶部用大版式展示。
    cover / video：目前统一留空 → 显示占位；提供封面图或原视频后填路径即可，
    不要抓取小红书 / B站的外部缩略图。
    不填播放量、发布日期、时长等任何未确认数据。
 ------------------------------------------------------------------- */
 const VIDEO_CATEGORIES = [
-  { key:'short-vlog', label:{ en:'Short Vlog', zh:'短 Vlog' } },
-  { key:'long-vlog',  label:{ en:'Long Vlog', zh:'长 Vlog' } },
-  { key:'talk',       label:{ en:'Talk', zh:'口播' } },
-  { key:'concept',    label:{ en:'Concept / Challenge', zh:'概念 / 挑战' } },
+  { key:'short-vlog', label:{ en:'Short Vlog', zh:'短Vlog' } },
+  { key:'long-vlog',  label:{ en:'Long Vlog', zh:'长Vlog' } },
+  { key:'talking',    label:{ en:'Talking', zh:'口播' } },
+  { key:'challenge',  label:{ en:'Challenge', zh:'挑战' } },
 ];
 
 const VIDEO_WORKS = [
   /* ---- Featured 01：概念 / 挑战 ---- */
   {
-    id:'movies-7days', featured:true, category:'concept', platform:'xhs',
+    id:'movies-7days', featured:true, category:'challenge', platform:'xhs',
     title:'7天每天看电影写观后感，我坚持下来了吗？',
     titleEn:'7 DAYS OF MOVIES',
-    type:{ en:'Concept / Challenge / Vlog', zh:'概念 / 挑战 / Vlog' },
+    type:{ en:'Challenge', zh:'挑战' },
     intro:{ en:'Watching one film and writing about it, every day for 7 days. There were interruptions — on day 7 I even fell asleep halfway through. The 7-day plan ended up taking 8 days. But that is exactly why it worked: an interruption is not an ending, and doing it imperfectly still counts as continuing.',
             zh:'连续 7 天每天看一部电影并写下观后感。中间有过中断，第 7 天甚至看到一半睡着了，最后这个「7 天计划」花了 8 天才完成。但也正因为这样，我开始觉得——中断不等于结束，做得不好也可以继续。' },
     focus:[ { en:'Concept Development', zh:'概念策划' }, { en:'Storytelling', zh:'故事结构' }, { en:'Personal Experiment', zh:'个人实验' }, { en:'Editing', zh:'剪辑' } ],
-    links:[ { p:'douyin', url:'https://v.douyin.com/EkDYoe5rZQA/' } ],
+    links:[ { p:'xhs', url:'https://xhslink.cn/o/4EejrvjGDRQ' } ],
     cover:'assets/video-content/movies-7days-cover.jpg', video:'', ratio:'3/4', mediaRatio:'3/4',
   },
-  /* ---- Featured 02：长 Vlog / 纪录 ---- */
+  /* ---- Featured 02：Vlog / Narrative ---- */
   {
     id:'vlog14-jiuzi', featured:true, category:'long-vlog', platform:'bili',
     title:'VLOG14｜九子夺嫡搜狐比赛全记录｜我们的冠军路',
     titleEn:'VLOG14 · ROAD TO THE CHAMPIONSHIP',
-    type:{ en:'Long Vlog / Documentary', zh:'长 Vlog / 纪录' },
+    type:{ en:'Long Vlog', zh:'长Vlog' },
     intro:{ en:'A full record of our dance competition journey — from preparation to the final result, told in one long-form edit.',
             zh:'完整记录我们的比赛之路 —— 从备赛到最终结果，用一条长视频讲完。' },
     focus:[ { en:'Long-form Storytelling', zh:'长视频叙事' }, { en:'Event Documentation', zh:'比赛记录' }, { en:'Editing', zh:'剪辑' } ],
@@ -520,7 +526,7 @@ const VIDEO_WORKS = [
   {
     id:'danlog-pms', category:'short-vlog', platform:'xhs',
     title:'蛋log｜人生美好，PMS坏！',
-    type:{ en:'Short Vlog', zh:'短 Vlog' },
+    type:{ en:'Short Vlog', zh:'短Vlog' },
     focus:[ { en:'Lifestyle Storytelling', zh:'生活叙事' }, { en:'Mood', zh:'情绪表达' }, { en:'Visual Editing', zh:'视觉剪辑' } ],
     links:[ { p:'xhs', url:'https://xhslink.cn/o/57aKqqqgO5I' } ],
     cover:'assets/video-content/danlog-pms-cover.jpg', video:'', ratio:'3/4',
@@ -528,7 +534,7 @@ const VIDEO_WORKS = [
   {
     id:'danlog-yellow-seoul', category:'short-vlog', platform:'xhs',
     title:'蛋log｜用 yellow 打开我的首尔逛吃 D-2',
-    type:{ en:'Short Vlog / Travel', zh:'短 Vlog / 旅行' },
+    type:{ en:'Short Vlog', zh:'短Vlog' },
     focus:[ { en:'Visual Concept', zh:'视觉概念' }, { en:'Color', zh:'色彩线索' }, { en:'Travel Editing', zh:'旅行剪辑' } ],
     links:[ { p:'xhs', url:'https://xhslink.cn/o/7cTdDdrqZmy' } ],
     cover:'assets/video-content/danlog-yellow-seoul-cover.jpg', video:'', ratio:'4/3',
@@ -536,7 +542,7 @@ const VIDEO_WORKS = [
   {
     id:'danlog-dongzhi', category:'short-vlog', platform:'xhs',
     title:'蛋log｜记一次25年冬至｜莲藕排骨汤初尝试',
-    type:{ en:'Short Vlog / Lifestyle', zh:'短 Vlog / 生活' },
+    type:{ en:'Short Vlog', zh:'短Vlog' },
     focus:[ { en:'Daily Storytelling', zh:'日常叙事' }, { en:'Food', zh:'食物' }, { en:'Atmosphere', zh:'氛围' } ],
     links:[ { p:'xhs', url:'https://xhslink.cn/o/6p9lLu7ZV00' } ],
     cover:'assets/video-content/danlog-dongzhi-cover.jpg', video:'', ratio:'4/3',
@@ -544,7 +550,7 @@ const VIDEO_WORKS = [
   {
     id:'wuhan-energy-map', category:'long-vlog', platform:'bili',
     title:'武汉生活片段｜我的能量修复地图',
-    type:{ en:'Long Vlog / Lifestyle', zh:'长 Vlog / 生活' },
+    type:{ en:'Long Vlog', zh:'长Vlog' },
     focus:[ { en:'Lifestyle Storytelling', zh:'生活叙事' }, { en:'Rhythm', zh:'节奏' }, { en:'Atmosphere', zh:'氛围' } ],
     links:[ { p:'bili', url:'https://b23.tv/fHsTHMu' } ],
     cover:'assets/video-content/wuhan-energy-map-cover.jpg', video:'', ratio:'4/3',
@@ -552,23 +558,23 @@ const VIDEO_WORKS = [
   {
     id:'vlog13-tianjin', category:'long-vlog', platform:'bili',
     title:'OMELETTE｜天津中转老友记｜江陵两日游',
-    type:{ en:'Long Vlog / Travel', zh:'长 Vlog / 旅行' },
+    type:{ en:'Long Vlog', zh:'长Vlog' },
     focus:[ { en:'Travel Storytelling', zh:'旅行叙事' }, { en:'Long-form Editing', zh:'长视频剪辑' }, { en:'Visual Diary', zh:'影像日记' } ],
     links:[ { p:'bili', url:'https://b23.tv/5wt4J3r' } ],
     cover:'assets/video-content/vlog13-tianjin-cover.jpg', video:'', ratio:'4/3',
   },
   {
-    id:'dantalk-first-class', category:'talk', platform:'xhs',
+    id:'dantalk-first-class', category:'talking', platform:'xhs',
     title:'蛋talk｜第一次去舞室，怎么选第一节课？',
-    type:{ en:'Talking Head / Knowledge', zh:'口播 / 知识内容' },
+    type:{ en:'Talking', zh:'口播' },
     focus:[ { en:'Topic Planning', zh:'选题策划' }, { en:'Information Structure', zh:'信息结构' }, { en:'On-camera Communication', zh:'口播表达' } ],
     links:[ { p:'xhs', url:'https://xhslink.cn/o/7wzqCxvd81G' } ],
     cover:'assets/video-content/dantalk-first-class-cover.jpg', video:'', ratio:'3/4',
   },
   {
-    id:'seoul-shopping-haul', category:'talk', platform:'xhs',
+    id:'seoul-shopping-haul', category:'talking', platform:'xhs',
     title:'抠搜大学生首尔购物分享｜形容词匮乏版',
-    type:{ en:'Talking Head / Haul', zh:'口播 / 好物分享' },
+    type:{ en:'Talking', zh:'口播' },
     focus:[ { en:'On-camera Speaking', zh:'口播表达' }, { en:'Haul Storytelling', zh:'好物分享叙事' }, { en:'Editing', zh:'剪辑' } ],
     links:[ { p:'xhs', url:'https://xhslink.cn/o/8YOkudoXLBW' } ],
     cover:'assets/video-content/seoul-shopping-cover.jpg', video:'', ratio:'4/3',

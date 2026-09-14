@@ -1,10 +1,4 @@
-# 不进入图库的照片名单（一行一个）
-# 写法：原始文件名、或路径片段都行，只要能匹配到那张照片的路径
-#   IMG_1875.JPG
-#   02摄影作品/糕/糕1/ffe2398150b4eca1ed7a6f34815a318b.jpg
-#
-# 加进来只是不进网站，原始照片不会被删掉也不会被改动。
-# 想恢复显示：把这行删掉（或前面加 #），再跑一次 zsh tools/build-visual.sh
-#
-# 最省事的做法：zsh tools/remove-visual.sh p-012
-/Users/omelette/Desktop/yuyusai作品集/02摄影作品/sis/sis2/2897.jpeg
+# 本机私有排除名单。
+# 公开版本不保留本机照片路径。
+# 如需排除照片，请在本机写入相对路径或文件名片段后重新运行：
+# VISUAL_SRC=/path/to/your/photos npm run build:visual

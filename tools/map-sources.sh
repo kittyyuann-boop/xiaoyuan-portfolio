@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # 原始照片目录：换机器/环境时用环境变量 VISUAL_SRC 覆盖
-SRC="${VISUAL_SRC:-/Users/omelette/Desktop/yuyusai作品集/02摄影作品}"
+SRC="${VISUAL_SRC:-${0:A:h}/../source-visual}"
 ROOT="${0:A:h}/.."
 OUT="$ROOT/tools/source-map.txt"
 EXCLUDE_FILE="$ROOT/tools/exclude.txt"

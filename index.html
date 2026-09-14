@@ -4,39 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google" content="notranslate">
-<title>XIAOYUAN — Visual · Music · Creative · Dance</title>
-<meta name="description" content="Creator working across visual storytelling, music, creative planning and dance. 活跃于影像、音乐、创意策划与舞蹈的创作者。">
+<title>XIAOYUAN — Visual · Music · Planning · Dance</title>
+<meta name="description" content="Creator working across visual storytelling, music projects, planning and dance. 活跃于影像、音乐项目、策划与舞蹈的创作者。">
 <!-- 本地迭代期防缓存：避免浏览器继续使用改动前的页面 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<link rel="stylesheet" href="style.css?v=20260913-video-cover28">
+<link rel="stylesheet" href="style.css?v=20260914-filter-egg-fix">
 </head>
 <body class="lang-en">
 
 <nav id="nav">
-  <a class="logo" href="#/" data-nav>XIAOYUAN<small>VISUAL · MUSIC · CREATIVE · DANCE</small></a>
+  <a class="logo" href="#/" data-nav>XIAOYUAN<small>VISUAL · MUSIC · PLANNING · DANCE</small></a>
   <div class="nav-right">
     <ul class="nav-links">
       <li><a href="#/visual"   data-nav data-key="visual"  ></a></li>
-      <li><a href="#/video"    data-nav data-key="video"   ></a></li>
       <li><a href="#/music"    data-nav data-key="music"   ></a></li>
-      <li><a href="#/creative" data-nav data-key="creative"></a></li>
+      <li><a href="#/planning" data-nav data-key="planning"></a></li>
       <li><a href="#/dance"    data-nav data-key="dance"   ></a></li>
       <li><a href="#/about"    data-nav data-key="about"   ></a></li>
     </ul>
     <div class="lang-toggle">
       <button id="langEn">EN</button><button id="langZh">中</button>
     </div>
-    <button class="burger" id="burger" aria-label="Menu"><i></i><i></i></button>
+    <button class="burger" id="burger" aria-label="Menu" aria-controls="mobileMenu" aria-expanded="false"><i></i><i></i></button>
   </div>
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="#/visual"   data-key="visual"  ></a>
-  <a href="#/video"    data-key="video"   ></a>
   <a href="#/music"    data-key="music"   ></a>
-  <a href="#/creative" data-key="creative"></a>
+  <a href="#/planning" data-key="planning"></a>
   <a href="#/dance"    data-key="dance"   ></a>
   <a href="#/about"    data-key="about"   ></a>
 </div>
@@ -44,11 +42,15 @@
 <main id="app"></main>
 
 <footer>
-  <span>© 2026 XIAOYUAN 徐小媛</span>
-  <span>VISUAL · MUSIC · CREATIVE · DANCE</span>
+  <div class="footer-title">
+    <span>LET'S CONNECT</span>
+    <small>© 2026 XIAOYUAN 徐小媛</small>
+  </div>
+  <div class="footer-links" id="footerLinks"></div>
 </footer>
 
-<div class="lightbox" id="lightbox">
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="View photo">
+  <button class="lb-btn lb-close" id="lbClose" aria-label="Close">×</button>
   <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous">←</button>
   <img id="lbImg" src="" alt="">
   <button class="lb-btn lb-next" id="lbNext" aria-label="Next">→</button>
@@ -58,8 +60,8 @@
 
 <!-- 加载顺序：数据 → 图库清单 → 渲染逻辑。
      gallery.js 由 tools/build-visual.sh 生成，缺失也不影响其余页面。 -->
-<script src="data.js?v=20260913-video-cover28"></script>
+<script src="data.js?v=20260914-filter-egg-fix"></script>
 <script src="assets/visual/gallery.js"></script>
-<script src="app.js?v=20260913-video-cover28"></script>
+<script src="app.js?v=20260914-filter-egg-fix"></script>
 </body>
 </html>

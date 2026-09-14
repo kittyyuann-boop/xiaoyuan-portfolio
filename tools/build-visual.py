@@ -11,9 +11,9 @@ import os, re, sys, glob, hashlib
 from PIL import Image, ImageOps
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# 原始照片目录：换机器/环境时用环境变量 VISUAL_SRC 覆盖，默认仍是本机原始路径。
+# 原始照片目录：换机器/环境时用环境变量 VISUAL_SRC 覆盖。
 # 注意：网站里用的是 assets/visual/ 下生成的副本，源目录只用于重新跑流水线。
-SRC = os.environ.get('VISUAL_SRC', '/Users/omelette/Desktop/yuyusai作品集/02摄影作品')
+SRC = os.environ.get('VISUAL_SRC', os.path.join(ROOT, 'source-visual'))
 DST = os.path.join(ROOT, 'assets/visual')
 EXCLUDE_FILE = os.path.join(ROOT, 'tools', 'exclude.txt')
 
@@ -98,7 +98,7 @@ def build(mode, prefix):
         name, w, h = save_variants(path, prefix, n)
         rel = f"{prefix_dir(prefix)}/full/{name}.jpg"
         rel_t = f"{prefix_dir(prefix)}/thumb/{name}.jpg"
-        entries.append(f"  {{f:'{rel}',t:'{rel_t}',w:{w},h:{h},s:\"{path}\"}},")
+        entries.append(f"  {{f:'{rel}',t:'{rel_t}',w:{w},h:{h}}},")
     print(f'  {prefix_dir(prefix)}: {n} 张（去重跳过 {dup} 张，排除名单跳过 {skip} 张）')
     return entries
 
@@ -111,7 +111,6 @@ def main():
 
     out = [
         '// 自动生成：tools/build-visual.sh —— 请勿手工编辑',
-        '// 图源：~/Desktop/yuyusai作品集/02摄影作品（人像 / 风景生活）',
         '// 已按 EXIF 方向纠正画面，竖拍照片不会再变成横图',
         'window.VISUAL_GALLERY = {',
         'portrait: [', *portrait, ']',

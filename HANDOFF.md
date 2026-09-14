@@ -51,7 +51,7 @@ npm run dev:py       # 或 python3 -m http.server 5173
 ### 构建 / 重新生成图库
 ```bash
 # 重新生成所有照片图库（去重 + 压缩 + 写 gallery.js）
-# 默认源目录是作者本机的 ~/Desktop/yuyusai作品集/02摄影作品
+# 默认源目录是项目内 source-visual，可用 VISUAL_SRC 指向你的本机照片源目录
 # 换机器/换环境时用环境变量指定你自己的源目录：
 VISUAL_SRC=/path/to/你的照片/02摄影作品 npm run build:visual
 # 等价： python3 tools/build-visual.py
@@ -140,7 +140,7 @@ npx vercel       # Vercel
 | 简历 PDF | `SITE.resume = 'assets/resume.pdf'`；About 页查看/下载按钮 | **文件不存在**，按钮会 404 | 简历下载 |
 | About 人像 | `SITE.portrait = ''`（空）→ About 页显示 `[PORTRAIT]` 占位块 | **未提供** | 关于页头像 |
 | 音乐人视频成片 | `CASES[0].video = {src:'',cover:'',link:''}` | **未提供** | 案例区视频 |
-| 原始照片源 | `tools/build-visual.py` 的 `SRC` / `VISUAL_SRC` | 在作者本机 `~/Desktop/yuyusai作品集/02摄影作品`，**未随仓库** | 仅用于重新生成图库 |
+| 原始照片源 | `tools/build-visual.py` 的 `SRC` / `VISUAL_SRC` | 本机照片源目录，**未随仓库** | 仅用于重新生成图库 |
 | 外部账号链接 | `SITE.email / bilibili / xhs / douyin` | **已为真实地址**（2026-09-13 用户提供）；仅 `danceAcc` 仍空 | 外链跳转 |
 | 字体 | CSS `--serif` / `--sans` | 系统字体，**无文件、无 CDN** | —— |
 
@@ -217,7 +217,7 @@ npx vercel       # Vercel
 2. **首页会隐藏导航前 N 项**：`body[data-route="home"] .nav-links li:nth-child(-n+5)`（加 Video 时已从 4 调整为 5）。再加导航项要同步改这个数字，否则首页会漏出多余的导航项。
 
 ### 9.4 封面文件与比例字段约定
-- 本地封面统一放 `assets/video-content/`，命名 `<work-id>-cover.jpg`。处理方式：`ImageOps.exif_transpose` 校正方向 → 长边压到 ≤1600px → JPEG q72（**不要用 macOS 的 `sips`，会丢 EXIF 旋转方向**；managed python 3.13.12 没有 PIL，可用 `/Users/omelette/.workbuddy/binaries/python/envs/default/bin/python`，里面已装 Pillow）。
+- 本地封面统一放 `assets/video-content/`，命名 `<work-id>-cover.jpg`。处理方式：`ImageOps.exif_transpose` 校正方向 → 长边压到 ≤1600px → JPEG q72（**不要用 macOS 的 `sips`，会丢 EXIF 旋转方向**）。
 - 两个比例字段，均按 `"宽/高"` 写（如 `'3/4'`）：
   - `mediaRatio`：FEATURED 大版式媒体框的比例，缺省 `16/9`。若为竖版（高 > 宽），`app.js` 会自动给 `<article>` 加 `.portrait` 类，`style.css` 里该类的列宽收窄并把媒体宽度限制在 480px，避免竖版海报被放大到占满整列。
   - `ratio`：SELECTED VIDEOS 卡片媒体框的比例，**按封面原图比例写**（渲染时内联为 `aspect-ratio`，缺省 `4/3`）。改封面图后必须同步这一字段，否则 `object-fit:cover` 会裁掉封面内容。
@@ -238,3 +238,28 @@ npx vercel       # Vercel
 ### 9.5 前文过时之处
 - 第 0 / 6.7 节说「煎蛋 redesign 未实现」——**已实现**：首页即煎蛋拼贴场景（`assets/home/`），Music 板块已变成「音乐人内容」四颗鸡蛋索引 + 4 个艺人案例页（artist-01…04）。
 - 第 6.3 节提到的 Music / Creative 意向页：Music 已改为艺人案例索引；Creative 已用站内真实案例重写；Dance 与 About 的部分文案仍待用户提供真实素材。
+
+
+## 10. 2026-09-13 交互完善
+- 图库支持 Tab 聚焦、Enter / Space 打开照片；灯箱新增关闭按钮、中英文操作标签、焦点约束与关闭后焦点恢复。
+- 修复暖色页面下灯箱按钮的对比度；遵循减少动态效果偏好。
+- 语言切换同步 HTML lang，存储不可用时仍能正常启动。
+- 收起的移动菜单不再进入键盘焦点序列。
+- 简历文件缺失：SITE.resume 置空，页面显示整理中和邮件入口。补入真实 PDF 后将该字段设为 assets/resume.pdf 即可恢复查看和下载。
+- 浏览器实测：图库键盘打开、翻页、关闭后焦点恢复、中文 About 简历提示。
+
+## 11. 2026-09-13 全站排版修复
+- `style.css` 末尾新增 Layout pass：统一 `--page-x`、内容最大宽度、内页顶部留白、章节两栏结构、按钮尺寸与文本行高。
+- 修复 `section.block` 归零 padding 后覆盖 `.panel` 的问题：现在用 `section.block.panel` 明确恢复内页顶部和底部距离，避免固定导航压住标题。
+- 移动端首页不再使用 142vw 超宽场景，音乐人索引不再使用 104/128vw 超宽蛋盒；390px 视口复查无横向溢出。
+- 手机端隐藏首页悬浮入口标签，只保留底部索引文字，避免「影像 / 音乐 / 舞蹈」标签互相压住。
+- About 页在 `SITE.portrait` 为空时不再渲染巨大 `[PORTRAIT]` 占位，直接展示自我介绍、简历和账号入口；有真实人像后仍会恢复左右图文结构。
+- Video 页重新收紧 Featured 与 Selected Videos：桌面网格改为 4 列，移动端保持 2 列卡片，减少单张视频卡片过高的问题，同时保留封面原比例。
+- 验证：`node --check app.js`、`node --check data.js` 通过；浏览器复查 `#/`、`#/visual`、`#/video`、`#/music`、`#/artist/artist-01`、`#/creative`、`#/dance`、`#/about` 在 390×844 与 1280×800 下均无横向溢出。
+
+## 12. 2026-09-13 Video 更多作品改版
+- 用户要求「更多作品」排版改成和「重点作品」一样的一行一个作品，并且封面保持原格式。
+- `app.js`：`renderVideoContent()` 里 `.vcard` 改为媒体 + 文案的横向 editorial 结构，按索引左右交替；根据 `ratio` 判断竖版封面并加 `.portrait`。
+- `style.css`：新增 `.video-page .vcard*` 最终覆盖规则，强制 `.vgrid` 单列、一行一个作品；桌面端横向排版，移动端上图下文；竖版封面最大宽度 420px / 移动端 360px。
+- 保留行为：`ratio` 仍控制 `.vcard-media` 的 `aspect-ratio`，所以 3:4、4:3、16:9 按原格式展示，不统一裁成同一种画框。
+- 验证：`node --check app.js`、`node --check data.js` 通过；浏览器量测桌面端 `.vcard` 宽度占满一行，移动端筛选「短 Vlog」后 3 个作品仍为单列，封面比例分别保持 3:4 / 4:3。

@@ -4,6 +4,7 @@
   "private": true,
   "description": "XIAOYUAN — Music · Content · Creative. Bilingual job-portfolio static site. No build step, no runtime dependencies.",
   "scripts": {
+    "build": "node --check data.js && node --check app.js && node --check assets/visual/gallery.js",
     "dev": "npx --yes serve -l 5173 .",
     "dev:py": "python3 -m http.server 5173",
     "build:visual": "python3 tools/build-visual.py"
