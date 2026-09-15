@@ -10,6 +10,12 @@ const app = $('#app');
 let LANG = 'en';
 try { LANG = localStorage.getItem('lang') === 'zh' ? 'zh' : 'en'; } catch (_) {}
 
+/* 图片缓存版本号。
+   改了某张图的内容但文件名不变时，浏览器会一直用缓存里的旧图
+   （CSS/JS 靠 index.html 的 ?v= 更新，图片没有这一层）。
+   每次替换图片内容就把这个号加一，强制所有浏览器重新拉取。 */
+const IMG_V = '20260915c';
+
 // 双语取值：字符串原样返回，对象取当前语言
 const t = o => !o ? '' : (typeof o === 'string' ? o : (o[LANG] || o.en || ''));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -75,12 +81,12 @@ function renderHome() {
       <span class="egg-pop egg-pop-visual" aria-hidden="true"></span>
       <span class="egg-pop egg-pop-dance" aria-hidden="true"></span>
       <span class="egg-pop egg-pop-about" aria-hidden="true"></span>
-      <div class="home-map" aria-hidden="true">
-        <span>01 ${esc(t(UI.visual))}</span>
-        <span>02 ${esc(t(UI.music))}</span>
-        <span>03 ${esc(t(UI.planning))}</span>
-        <span>04 ${esc(t(UI.dance))}</span>
-        <span>05 ${esc(t(UI.about))}</span>
+      <div class="home-map">
+        <a href="#/visual">01 ${esc(t(UI.visual))}</a>
+        <a href="#/music">02 ${esc(t(UI.music))}</a>
+        <a href="#/planning">03 ${esc(t(UI.planning))}</a>
+        <a href="#/dance">04 ${esc(t(UI.dance))}</a>
+        <a href="#/about">05 ${esc(t(UI.about))}</a>
       </div>
 
       <a class="egg-link egg-link-planning" href="#/planning" data-home-key="planning">
@@ -663,6 +669,120 @@ function renderMasonry() {
 /* ==================================================================
    Music / Creative / Dance —— 意向页
    ================================================================== */
+function renderCreative() {
+  const zh = LANG === 'zh';
+  const txt = (cn, en) => zh ? cn : en;
+  const img = (name, alt, style = '') => `<img src="assets/creative/${name}?v=${IMG_V}" alt="${esc(alt)}" loading="lazy" decoding="async"${style ? ` style="${style}"` : ''} onerror="var f=this.closest('figure');if(f){f.hidden=true}else{this.style.display='none'}">`;
+
+  /* 统一格式的四个积木：头部 / 元信息栏 / 区块 / 图版 / 图片带 */
+  const caseHead = (num, label, title, tag, lede, quote = '') => `<header class="cc-head" data-reveal>
+      <div class="cc-head-meta"><span class="cc-num">${num}</span><span class="label">${label}</span><span class="cc-tag">${tag}</span></div>
+      <h2 class="cc-title">${title}</h2>
+      <p class="cc-lede">${lede}</p>
+      ${quote ? `<p class="cc-quote">${quote}</p>` : ''}
+    </header>`;
+  const facts = rows => `<dl class="cc-facts" data-reveal>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+  const block = (num, label, body) => `<section class="cc-block" data-reveal>
+      <div class="cc-block-head"><span class="cc-block-num">${num}</span><span class="label">${label}</span></div>
+      <div class="cc-block-body">${body}</div>
+    </section>`;
+  const paper = (name, caption, cls = '', attrs = '') => `<figure class="cc-paper ${cls}"${attrs}>${img(name, caption)}${caption ? `<figcaption>${caption}</figcaption>` : ''}</figure>`;
+  const rail = files => `<div class="cc-rail">${files.map(f => `<figure class="cc-rail-item">${img(f, '')}</figure>`).join('')}</div>`;
+  const steps = list => `<div class="cc-steps">${list.map((s, i) => `${i ? '<i>→</i>' : ''}<span>${s}</span>`).join('')}</div>`;
+
+  /* Case 04：小号内容策划。逻辑：为什么做小号 → 小号是什么 → 拍什么 → 原策划案证据 → 我的职责 */
+  const sidePillars = [
+    ['WORK', '主理人日常', ['主理人到公司第一件事', '一天如何排时间']],
+    ['MUSIC', '音乐人幕后', ['一句歌录 20 遍的原因', '嗓子不舒服怎么护嗓']],
+    ['PEOPLE', '新人培养与真实关系', ['看新人 demo 怎么提意见', '新人镜头表现指导']],
+    ['OFF DUTY', '团队与长沙生活', ['长沙工作间隙吃什么', '团队谁最可能迟到']]
+  ];
+  const sideDocNote = '策划案原稿 — 小号整体定位 / 栏目设置 / 单条视频结构 / 数据复盘与 30 天目标';
+
+  /* Case 05：脚本作品。顺序即两栏的阅读顺序，高度由图片自身比例决定 */
+  const shootingScripts = [
+    ['shooting-script-drink.png', '康师傅冰红茶 · 主题曲推广分镜'],
+    ['shooting-script-dv.png', '脉动 · DV 随拍分镜'],
+    ['shooting-script-game.png', '和平精英 · 变装短视频脚本'],
+    ['shooting-script-auto.png', '汽车音乐推广 · 分镜脚本']
+  ];
+
+  app.innerHTML = `<section class="block panel creative-page"><div class="wrap fade-in"><div class="panel-head"><span class="label">03 — ${txt('策划','CREATIVE')}</span><h1 class="display">${txt('把想法变成结构、节奏和可以被看见的现场。','Turning ideas into structure, rhythm and visible evidence.')}</h1></div><div class="creative-index"><span class="label">SELECTED PROJECTS</span><p>${txt('每个案例都把原始策划、规则系统和现场记录放在同一条叙事里：文字解释为什么这样设计，图片只在能够证明现场的地方出现。','Every case connects source planning, systems and on-site records: text explains the decision; images appear only where they verify the work.')}</p></div>
+
+  <article class="cc" data-reveal>
+    ${caseHead('01', 'CREATIVE PROJECT', '艺人动员会<br>策划及执行', 'ARTIST KICK-OFF',
+      '面向公司新招募艺人的破冰与动员活动。通过互动游戏、才艺展示与自由交流，让刚加入的艺人快速认识彼此、熟悉团队，在轻松的氛围中建立连接。')}
+    ${facts([['ROLE', '活动策划 / 流程设计 / 游戏与互动环节设计 / 现场组织与执行'], ['TARGET', '公司新招募艺人'], ['FORMAT', '互动游戏 · 才艺展示 · 自由交流']])}
+    ${block('01', 'LIVE MOMENTS / 现场记录', rail(['artist-kickoff-4099.jpg', 'artist-kickoff-1062.png', 'artist-kickoff-4094.jpg', 'artist-kickoff-1064.png', 'artist-kickoff-4100.jpg']))}
+    ${block('02', 'SOURCE DOCUMENT / 策划原稿', paper('artist-kickoff-plan.png', '3月1日艺人动员会企划及执行方案', 'cc-paper-soft'))}
+  </article>
+
+  <article class="cc" data-reveal>
+    ${caseHead('02', 'CREATIVE PROJECT', '青春江大，声耀未来<br>十佳歌手策划', 'CAMPUS SINGING COMPETITION',
+      '江汉大学音乐学院“青春江大，声耀未来”十佳歌手活动，面向江汉大学全体学生开展，通过海选、复赛与决赛三个阶段完成赛事选拔与舞台呈现。')}
+    ${facts([['ORGANISER', '江汉大学音乐学院'], ['STAGES', '海选 / 复赛 / 决赛'], ['YEAR', '2023'], ['ROLE', '赛事策划 / 流程设计 / 现场执行']])}
+    ${block('01', 'RULES &amp; FLOW / 赛事流程', paper('voice-of-youth-process-map.png', '十佳歌手原始赛事流程图', 'cc-paper-tall'))}
+    ${block('02', 'LIVE MOMENTS / 现场记录', rail(['voice-youth-1072.jpg', 'voice-youth-1073.jpg', 'voice-youth-1074.jpg', 'voice-youth-1075.jpg', 'voice-youth-1076.jpg']))}
+    ${block('03', 'SOURCE DOCUMENT / 策划原稿', paper('voice-youth-plan.png', '青春江大声耀未来十佳歌手策划案原稿', 'cc-paper-soft'))}
+  </article>
+
+  <article class="cc" data-reveal>
+    ${caseHead('03', 'CREATIVE PROJECT', '湖畔电影院', 'CAMPUS CINEMA PROJECT',
+      '疫情封校期间，校园娱乐活动受限。我们尝试把学院的小音乐厅变成一间临时电影院，通过免费的电影放映，为同学提供一个可以走出宿舍、一起看电影的去处。',
+      '把音乐厅，暂时变成电影院。')}
+    ${facts([['DATE', '2022.11.18 — 2022.11.20'], ['VENUE', '学院小音乐厅'], ['FORMAT', '免费电影放映'], ['ROLE', '活动整体策划 · 放映内容与流程设计 · 宣传内容策划 · 现场组织与执行 · 活动复盘']])}
+    ${block('01', 'PROJECT IDEA / 项目构思', `<ol class="cc-list">${['校园公共文化空间', '免费电影放映', '轻松、低门槛的线下文化活动'].map(x => `<li>${x}</li>`).join('')}</ol>`)}
+    ${block('02', 'THE EXPERIENCE / 现场流程', steps(['影片预告', '现场签到 / 入场', '电影放映', '观影交流', '活动回顾']))}
+    ${block('03', 'LIVE MOMENTS / 现场记录', rail(['lakeside-1066.jpg', 'lakeside-1067.jpg', 'lakeside-1077.jpg']))}
+    ${block('04', 'SOURCE DOCUMENT / 策划原稿', paper('lakeside-plan.png', '江汉大学湖畔电影院活动策划案', 'cc-paper-soft'))}
+    ${block('05', 'FROM THE ARCHIVE / 公众号记录', `<div class="creative-lakeside-archive-grid cc-archive"><figure><span class="label">BEFORE / 活动发布</span>${img('lakeside-opening.jpg', '湖畔电影院开映记录', 'object-position:50% 19%')}</figure><figure><span class="label">AFTER / 活动回顾</span>${img('lakeside-recap.jpg', '湖畔电影院活动回顾', 'object-position:50% 11%')}</figure></div><figure class="cc-ticket">${img('lakeside-ticket.jpg', '湖畔电影院真实电影票')}<figcaption>MOVIE TICKET / 真实电影票</figcaption></figure>`)}
+  </article>
+
+  <article class="cc" data-reveal>
+    ${caseHead('04', 'CONTENT PROPOSAL · NOT IMPLEMENTED', '大表哥Sophie｜小号内容策划', 'ARTIST SIDE ACCOUNT STRATEGY',
+      '大号负责音乐作品与歌手身份，小号则补充作品之外的人。')}
+    ${block('01', 'CORE POSITIONING / 核心定位', `<p class="cc-quote">身份反差 × 幕后真实 × 人物关系</p><p class="cc-lede">从身边人的视角，记录一个歌手兼音乐公司主理人的幕后日常。</p>`)}
+    ${block('02', 'CONTENT PILLARS / 内容方向', `<div class="cc-pillars">${sidePillars.map(([key, cat, items]) => `<section><span class="cc-pillar-key">${key}</span><p class="cc-pillar-cat">${cat}</p><ul>${items.map(x => `<li>${x}</li>`).join('')}</ul></section>`).join('')}</div>`)}
+    ${block('03', 'ORIGINAL PLANNING DOCUMENT / 策划原稿', `<div class="cc-doc-full">${paper('side-account-plan-full.png', sideDocNote, 'cc-paper-soft cc-paper-wide')}</div>`)}
+    ${block('04', 'MY ROLE / 我的职责', `<p class="cc-role">账号定位 · 内容方向 · 选题策划 · 拍摄思路</p>`)}
+  </article>
+
+  <article class="cc" data-reveal>
+    ${caseHead('05', 'CREATIVE PRODUCTION', '拍摄脚本', 'SHOOTING SCRIPT / SHOT LIST',
+      '品牌推广与达人内容的短视频分镜脚本：逐镜标注景别、画面内容、时长，以及音乐、花字与拍摄备注。')}
+    ${block('01', 'SHOOTING SCRIPTS / 分镜脚本', `<div class="cc-scripts">${shootingScripts.map(([f, alt]) => `<figure class="cc-paper cc-paper-soft">${img(f, alt)}</figure>`).join('')}</div>`)}
+  </article>
+
+  <div class="panel-nav">${navSiblings('planning')}</div></div></section>`;
+
+  bindCreativeMotion();
+}
+
+/* Creative 页面：进入视口时逐块浮起，同一案例内轻微错峰 */
+let ccIO = null;
+function bindCreativeMotion() {
+  const items = [...app.querySelectorAll('.creative-page [data-reveal]')];
+  if (!items.length) return;
+  if (ccIO) { ccIO.disconnect(); ccIO = null; }
+  const seen = new Map();
+  items.forEach(el => {
+    const key = el.closest('.cc') || el.parentElement;
+    const n = seen.get(key) || 0;
+    seen.set(key, n + 1);
+    el.style.setProperty('--d', Math.min(n, 3) * 80 + 'ms');
+  });
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+    items.forEach(el => el.classList.add('is-in'));
+    return;
+  }
+  ccIO = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('is-in');
+    ccIO.unobserve(e.target);
+  }), { rootMargin: '0px 0px -8%' });
+  items.forEach(el => ccIO.observe(el));
+}
+
 function renderPanel(key) {
   const p = PANELS[key];
   const pending = isPending(t(p.lede));
@@ -700,8 +820,10 @@ function navSiblings(key) {
 /* ==================================================================
    About
    ================================================================== */
+const ABOUT_ARCHIVE_PHOTOS = ['44E8E532-2FAC-4F2A-956C-7B471E6BC813_1_105_c.jpeg','F4499102-E1C3-43E3-897C-A08BB7A1F669_1_105_c.jpeg','BF42C879-0122-41CF-8B2D-328D0E361821_1_105_c.jpeg','IMG_3731.JPG','7EDA0A8B-745B-440C-8A04-126BE163ED14_1_105_c.jpeg','A2A13BA7-613E-4C33-9377-6C47FEF03C4A_1_105_c.jpeg','52ED9595-CC9E-4C55-99A7-FF7D50AFECF3_1_105_c.jpeg','35FF8B9E-A01B-44DF-A918-7FBA3480A529_1_105_c.jpeg','C9344C20-D263-4010-978A-B14075CFB69C_1_105_c.jpeg','D47124B2-7BA8-4B66-8C24-D0C669551C42_1_105_c.jpeg','6C995405-9596-4A1F-8D0B-F2DC5E1BC460_1_105_c.jpeg','2E5332C2-658A-4ECC-96AA-3511A434B5_1_105_c.jpeg','BD6F1562-B34F-4A1A-9DAA-FDFEA6FC0D7F_1_105_c.jpeg','5D52E89C-8998-4DE1-86C3-6CB8E8C8865A_1_105_c.jpeg','CC260E8F-4AC2-4911-BBB6-A39C904A4563_1_105_c.jpeg','IMG_4980.JPG','1E47B0C6-FE08-4B69-9788-DADD33B133A2_1_105_c.jpeg','8EE3AD6D-2F61-48EC-9B3B-413F71306BE5_1_105_c.jpeg','01C7D311-D2D1-4EBF-B6C1-4934F7412941_1_105_c.jpeg','93E0DE17-2F5E-42B2-97AF-ECC48F618B12_1_105_c.jpeg','15D22047-E10B-40C5-B158-4FAD48E40843_1_105_c.jpeg','EF93E9E1-5865-4FE7-9575-8B3CEFD88588_1_105_c.jpeg','7ED59D9C-4019-42C1-9EFE-AB456AAFF38F_1_105_c.jpeg','B1AE14F8-61E0-4319-B956-6C753382B8DA_1_105_c.jpeg','98923917-D3E9-4C65-A406-5E5D1038EF07_1_105_c.jpeg','709FE414-DAC5-438F-AA66-A29AE2F7FD77_1_105_c.jpeg','31D0999E-2851-4F38-8FC8-18DCB435735C_1_105_c.jpeg','DB5C7310-1B40-457A-9B45-38DD4858662A_1_105_c.jpeg','6DD2EFD8-2272-454B-A141-9597FFBC3DBA_1_105_c.jpeg','ADFD46A5-98E0-415D-8FEB-2385378A27B4_1_105_c.jpeg','IMG_4900.JPG'];
 function renderAbout() {
   const hasPortrait = filled(SITE.portrait);
+  const randomPhotos = ABOUT_ARCHIVE_PHOTOS.slice(0,12);
   app.innerHTML = `
   <section class="block panel">
     <div class="wrap">
@@ -712,32 +834,52 @@ function renderAbout() {
           </div>
         </div>` : ''}
         <div class="about-text">
+          <a class="about-home-link" href="#/">← BACK TO HOME</a><nav class="about-subnav" aria-label="About sections"><a class="active" href="#/about">ABOUT / MAIN</a><a href="#/about/archive">MY ARCHIVE</a></nav>
           <span class="label">${esc(t(UI.about))}</span>
-          <h1 class="display">${esc(t(ABOUT.lede))}</h1>
-          ${ABOUT.blocks.map(blockHTML).join('')}
+          <h1 class="display">ABOUT XIAOYUAN</h1>
+          <div class="about-editorial-intro"><p class="about-lead">我的很多选择，好像都从音乐开始，又慢慢走向了更远的地方。</p><p>大学学的是声乐表演，但音乐从来不是我生活里唯一的表达方式。舞蹈、影像、内容创作，也在不同阶段进入了我的生活。</p><p>我唱歌，也跳舞；参加比赛、组织团队，也拿起相机记录生活。后来进入音乐人项目工作，我开始参与内容策划、拍摄、剪辑和项目执行，也第一次更具体地看到，一个想法是怎样一点点变成真正被人看到的东西。</p><p>回头看，这些经历并没有把我带向完全不同的方向。相反，它们让我越来越清楚自己喜欢什么——</p><p class="about-pullquote">观察人，理解作品，把一个模糊的想法慢慢变成真实存在的东西。</p><p>我还在继续学习，也在尝试新的事情。比起急着给自己一个确定的标签，我更期待看看，这些经历还会把我带到哪里。</p></div>
 
-          <div class="sect">
-            <h3>${esc(t(UI.resume))}</h3>
-            <p class="body">${esc(t(SITE.resume ? UI.resumeReady : UI.resumeHint))}</p>
-            <div class="links-row" style="margin-top:20px">
-              ${SITE.resume ? `<a class="btn" href="${esc(SITE.resume)}" target="_blank" rel="noopener">${esc(t(UI.viewResume))} ↗</a>
-              <a class="btn ghost" href="${esc(SITE.resume)}" download>${esc(t(UI.download))} ↓</a>` : `<a class="btn ghost" href="mailto:${esc(SITE.email)}">${esc(t(UI.contact))} ↗</a>`}
-            </div>
-          </div>
+          <section class="about-random sect" id="aboutRandom" aria-labelledby="randomPhotoTitle">
+            <div class="random-photo-head"><div><span class="label">RANDOM MOMENTS</span><h2 id="randomPhotoTitle">作品之外，我大概是这样的。</h2><p class="random-photo-subtitle">这里没有什么需要被证明的东西。只是一些我喜欢留下来的瞬间。</p></div><button class="random-photo-button" type="button" id="randomPhotoButton">RANDOM / STOP</button></div>
+            <div class="random-photo-window" id="randomPhotoWindow"><div class="random-photo-track" id="randomPhotoTrack">${[...randomPhotos, ...randomPhotos].map((file,i)=>`<img src="assets/dance/about/${file}" alt="" loading="${i < 5 ? 'eager' : 'lazy'}" decoding="async">`).join('')}</div></div>
+            <div class="random-photo-footer"><p class="random-photo-note" id="randomPhotoNote">click and let it land.</p><div class="random-photo-links" id="randomPhotoLinks" hidden><button type="button" id="randomPhotoAgain">AGAIN ↻</button><a href="#/about/archive">VIEW MY ARCHIVE →</a></div></div>
+          </section>
 
-          <div class="sect">
-            <h3>${esc(t(UI.channels))}</h3>
-            <div class="links-row">
-              <a class="btn" href="${esc(SITE.bilibili)}" target="_blank" rel="noopener">${esc(t(UI.bilibili))} ↗</a>
-              <a class="btn ghost" href="${esc(SITE.xhs)}" target="_blank" rel="noopener">${esc(t(UI.xhs))} ↗</a>
-              <a class="btn ghost" href="${esc(SITE.douyin)}" target="_blank" rel="noopener">${esc(t(UI.douyin))} ↗</a>
-              <a class="btn ghost" href="mailto:${esc(SITE.email)}">${esc(t(UI.email))} ↗</a>
-            </div>
-          </div>
+          <section class="about-path sect"><span class="label">MY PATH</span><p class="path-note">我没有沿着一条笔直的路线走到这里。<br>但每一段经历，都留下了一点现在的我。</p><div class="about-path-steps"><span>VOCAL PERFORMANCE</span><i>↓</i><span>DANCE &amp; VISUAL</span><i>↓</i><span>ARTIST CONTENT</span><i>↓</i><span>MUSIC &amp; CREATIVE</span></div></section>
+          <section class="about-currently sect"><span class="label">CURRENTLY</span><h2>现在，我正在寻找音乐行业里的下一站。</h2><div class="links-row"><a class="btn" href="#/visual">VIEW MY WORK →</a><a class="btn ghost" href="${esc(SITE.resume)}" target="_blank" rel="noopener">RESUME ↗</a></div><section class="about-contact" aria-labelledby="aboutContactTitle"><span class="label" id="aboutContactTitle">CONTACT</span><dl><div><dt>EMAIL</dt><dd><a href="mailto:2952919277@qq.com">2952919277@qq.com</a></dd></div><div><dt>PHONE</dt><dd><a href="tel:13873508277">13873508277</a></dd></div><div><dt>WECHAT</dt><dd>13873508277</dd></div></dl></section></section>
+
         </div>
       </div>
     </div>
   </section>`;
+  bindRandomPhoto(randomPhotos.length);
+}
+
+function renderAboutArchive() {
+  app.innerHTML = `<section class="block panel"><div class="wrap"><div class="about-archive-page"><nav class="about-subnav" aria-label="About sections"><a href="#/about">ABOUT / MAIN</a><a class="active" href="#/about/archive">MY ARCHIVE</a></nav><button class="archive-back" type="button" id="archiveBack">← BACK TO ABOUT</button><span class="label">MY ARCHIVE</span><h1 class="display">Some ordinary days.</h1><p class="archive-intro">friends. places I've been. things I wanted to remember.</p><div class="about-archive-grid">${ABOUT_ARCHIVE_PHOTOS.map((file,i)=>`<button class="about-archive-photo" type="button" data-archive-index="${i}"><img src="assets/dance/about/${file}" alt="" loading="lazy" decoding="async"></button>`).join('')}</div></div></div></section>`;
+  $('#archiveBack').onclick = () => { location.hash = '#/about'; };
+  app.querySelectorAll('[data-archive-index]').forEach(photo => { photo.onclick = () => openLightbox(ABOUT_ARCHIVE_PHOTOS.map(file => `assets/dance/about/${file}`), Number(photo.dataset.archiveIndex), true); });
+}
+
+function bindRandomPhoto(count) {
+  const windowEl = $('#randomPhotoWindow'), track = $('#randomPhotoTrack'), button = $('#randomPhotoButton'), note = $('#randomPhotoNote');
+  if (!windowEl || !track) return;
+  const links = $('#randomPhotoLinks'), again = $('#randomPhotoAgain');
+  let offset = 0, velocity = .65, running = true, frame, lastIndex = -1;
+  const clearPicked = () => [...track.children].forEach(item => item.classList.remove('random-picked','random-dim'));
+  const tick = () => { if (!running) return; offset -= velocity; track.style.transform = `translate3d(${offset}px,0,0)`; if (Math.abs(offset) > track.scrollWidth / 2) offset += track.scrollWidth / 2; frame = requestAnimationFrame(tick); };
+  const stopOnRandom = () => {
+    cancelAnimationFrame(frame); running = false; button.disabled = true; note.textContent = 'letting it land…';
+    const items = [...track.children]; let index = Math.floor(Math.random() * count); if (count > 1 && index === lastIndex) index = (index + 1) % count; lastIndex = index; const item = items[index + count];
+    const target = windowEl.clientWidth / 2 - (item.offsetLeft + item.offsetWidth / 2);
+    track.style.transition = 'transform 2.8s cubic-bezier(.12,.72,.18,1)'; track.style.transform = `translate3d(${target}px,0,0)`;
+    setTimeout(() => { offset = target; clearPicked(); item.classList.add('random-picked'); items.forEach(other => { if (other !== item) other.classList.add('random-dim'); }); note.textContent = `${String(index + 1).padStart(2,'0')} / a random moment`; links.hidden = false; button.disabled = false; }, 2900);
+  };
+  const restart = () => { clearPicked(); links.hidden = true; track.style.transition='none'; track.style.transform=`translate3d(${offset}px,0,0)`; running=true; note.textContent='click and let it land.'; frame=requestAnimationFrame(tick); };
+  button.onclick = () => { if (running) stopOnRandom(); else restart(); };
+  windowEl.onclick = () => { if (running) stopOnRandom(); };
+  again.onclick = restart;
+  frame = requestAnimationFrame(tick);
 }
 
 /* ==================================================================
@@ -883,6 +1025,112 @@ function bindVideoFilters(scope) {
   });
 }
 
+/* Dance — selected performances, team projects and practice. */
+function renderDance() {
+  const copy = (zh, en) => LANG === 'zh' ? zh : en;
+  const photo = (name, alt, extra = '') => `<img src="assets/dance/web/${name}.jpg" alt="${esc(alt)}" ${extra || 'loading="lazy" decoding="async"'}>`;
+  const external = (url, label, cls = '') => `<a class="dance-out ${cls}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} <span aria-hidden="true">↗</span></a>`;
+  const jiuzi = 'https://v.douyin.com/CkQWfdUoKEw/';
+  const heading = (n, title, subtitle) => `<header class="dance-section-head"><span class="dance-index">${n} /</span><div><h2>${title}</h2><p>${subtitle}</p></div></header>`;
+  /* 线上播放的是 assets/dance/web/ 下的 H.264 压缩版（原片体积过大，无法上线）。
+     原片仍在 assets/dance/ 根目录，已被 .gitignore 排除。 */
+  const solos = [
+    { title:'KOONG', poster:'koong', file:'web/koong.mp4', tag:'LIVE / PERFORMANCE', size:'42 MB' },
+    { title:'we don’t stop', poster:'we-dont-stop', file:'web/we-dont-stop.mp4', tag:'LIVE / PERFORMANCE', size:'56 MB' },
+    { title:'unique', poster:'unique', file:'web/unique.mp4', tag:'LIVE / PERFORMANCE', size:'13 MB' },
+    { title:'iconic by mistake', poster:'iconic', file:'web/iconic.mp4', tag:'OUTDOOR / PRACTICE', size:'2.5 MB' },
+    { title:'bad', poster:'bad', file:'web/bad.mp4', tag:'OUTDOOR / PRACTICE', size:'4.7 MB' },
+    { title:'she will', poster:'she-will', file:'web/she-will.mp4', tag:'STUDIO / PRACTICE', size:'6.2 MB' },
+    { title:'wicked', poster:'wicked', file:'web/wicked.mp4', tag:'STUDIO / PRACTICE', size:'4.1 MB' },
+    { title:'itis', poster:'itis', file:'web/itis.mp4', tag:'STUDIO / PRACTICE', size:'4.5 MB', orientation:'landscape', ratio:'4/3' },
+    { title:'meow', poster:'meow', file:'web/meow.mp4', tag:'STUDIO / PRACTICE', size:'3.4 MB', orientation:'landscape', ratio:'4/3' },
+    { title:'stay in', poster:'stay-in', file:'web/stay-in.mp4', tag:'STUDIO / PRACTICE', size:'4.4 MB', orientation:'landscape', ratio:'16/9' },
+    { title:'slow motion', poster:'slow-motion', file:'web/slow-motion.mp4', tag:'STUDIO / PRACTICE', size:'4.3 MB', orientation:'landscape', ratio:'4/3' },
+    { title:'NOKIA', poster:'nokia', file:'web/nokia.mp4', tag:'STUDIO / PRACTICE', size:'5.2 MB', orientation:'landscape', ratio:'16/9' },
+  ];
+  const awards = [
+    ['2026', [copy('搜狐关注流舞蹈大赛冠军','Champion · Sohu Follow Feed Dance Competition'),copy('武汉 OPPO 翻跳大赛冠军','Champion · Wuhan OPPO Cover Dance Competition')]],
+    ['2025', [copy('搜狐视频舞蹈翻跳大赛长沙赛区冠军','Champion · Sohu Video Cover Dance Competition, Changsha'),copy('武汉 OPPO 翻跳大赛亚军','Runner-up · Wuhan OPPO Cover Dance Competition'),copy('华中地区 KPOP 翻跳大赛冠军','Champion · Central China KPOP Cover Dance Competition'),copy('考入 RGM 舞队','Selected for RGM dance crew'),copy('受邀参加搜狐舞蹈盛典','Invited to the Sohu Dance Festival'),copy('芒果招商会伴舞，与何炅、汪涵、沈梦辰、齐思钧、谭薇、张雅琪等同台演出','Backup dancer at the Mango TV showcase, appearing on stage with He Jiong, Wang Han, Shen Mengchen, Qi Sijun, Tan Wei, Zhang Yaqi and others')]],
+    ['2024', [copy('搜狐 KPOP 舞蹈视频翻跳大赛武汉赛区季军','Third place · Sohu KPOP Cover Dance Competition, Wuhan'),copy('受邀参加搜狐舞蹈盛典','Invited to the Sohu Dance Festival')]],
+    ['2023', [copy('考入 Level Up 大学生联队 UP NOW','Selected for UP NOW, the Level Up university dance crew'),copy('武汉 Omolet’s KPOP 翻跳大赛冠军','Champion · Wuhan Omolet’s KPOP Cover Dance Competition'),copy('武汉舞征高校齐舞大赛冠军','Champion · Wuhan Wuzheng University Group Dance Competition'),copy('武汉舞动青春大学生齐舞挑战赛第四名','Fourth place · Wuhan Wudong Qingchun University Group Dance Challenge')]],
+  ];
+  app.innerHTML = `<article class="dance-page">
+    <header class="dance-hero">
+      <div class="dance-hero-copy"><p class="dance-eyebrow">04 / MOVEMENT NOTES</p><h1>DANCE</h1><p class="dance-disciplines">KPOP · HIPHOP · JAZZ · PERFORMANCE · TEACHING</p>
+        <p class="dance-hero-note">${copy('从练习室，到舞台。','From the studio,<br>to the stage.')}</p>
+        <div class="dance-credentials"><span>SOHU DANCE FESTIVAL 2024 / 2025</span><span>MANGO TV STAGE</span><span>MULTIPLE COMPETITION WINS</span></div>
+      </div>
+      <figure class="dance-hero-photo">${photo('hero',copy('红衣个人舞台照片','Solo stage portrait in red'),'fetchpriority="high" decoding="async"')}<figcaption>ON STAGE / 2025</figcaption></figure>
+      <span class="dance-handnote" aria-hidden="true">5, 6, 7, 8!</span>
+    </header>
+
+    <section class="dance-section dance-solo" aria-labelledby="dance-solo-title">
+      ${heading('02','<span id="dance-solo-title">SOLO</span> — PERSONAL DANCE',copy('个人表现力 / 身体控制 / 风格驾驭','Expression / body control / range'))}
+      <div class="dance-solo-grid">${solos.map((s,i)=>`<article class="dance-solo-item">
+        <div class="dance-video-frame ${s.orientation === 'landscape' ? 'dance-video-landscape' : ''} ${s.file ? '' : 'dance-video-pending'}" style="--video-ratio:${s.ratio || '9/16'}" data-solo-frame="${i}">
+          ${photo(s.poster+'-poster',`${s.title} — ${copy('视频画面','video still')}`)}
+          ${s.file ? `<button class="dance-play" data-solo="${i}" aria-label="${esc(copy('播放 ','Play ')+s.title)}"><span aria-hidden="true">▶</span> ${copy('播放','PLAY')}</button>` : `<span class="dance-pending-label">${copy('Web 版本待补充','WEB VERSION PENDING')}</span>`}
+        </div><div class="dance-video-caption"><span class="dance-eyebrow">0${i+1} / ${s.tag}</span><h3>${esc(s.title)}</h3><p>${s.file ? copy('点击播放 · ','Play on demand · ')+s.size : copy('个人演出 · 封面预览','Solo performance · preview')}</p></div>
+        <p class="dance-play-status" data-solo-status="${i}" role="status"></p>
+      </article>`).join('')}</div>
+    </section>
+
+    <section class="dance-section dance-team">
+      ${heading('03','TEAM &amp; COMPETITION',copy('一起排练，一起上场。','Rehearse together. Take the stage together.'))}
+      <div class="dance-team-grid">
+        <article class="dance-team-lead"><a class="dance-photo-link" href="${jiuzi}" target="_blank" rel="noopener noreferrer" aria-label="${copy('观看九子夺嫡比赛视频','Watch the 9-person competition video')}">${photo('jiuzi',copy('九子夺嫡九人持扇合照','Nine-person team portrait with fans'))}<span class="dance-ticket">2026 / CHAMPION ↗</span></a><h3>${copy('九子夺嫡','9-Person Dance Project')}</h3><p>${copy('2026 搜狐关注流舞蹈大赛冠军','2026 Sohu Follow Feed Dance Competition · Champion')}</p></article>
+        <article class="dance-team-second"><a class="dance-photo-link" href="https://v.douyin.com/qPwoAv9oKcA/" target="_blank" rel="noopener noreferrer" aria-label="${copy('观看 We Don’t Stop 比赛视频','Watch We Don’t Stop')}">${photo('changsha',copy('2025 搜狐长沙赛区团队获奖合照','Team award photo at the 2025 Sohu Changsha competition'))}</a><span class="dance-eyebrow">2025 / CHAMPION</span><h3>Xikers — We Don’t Stop</h3><p>${copy('搜狐视频舞蹈翻跳大赛长沙赛区冠军','Sohu Video Cover Dance Competition, Changsha · Champion')}</p></article>
+        <article class="dance-team-type"><span class="dance-eyebrow">ORIGINAL / GROUP WORK</span><h3>SWAG</h3><p>${copy('原创齐舞作品','Original group dance piece')}</p>${external('https://weixin.qq.com/sph/A08CoR8xW3',copy('观看作品 · 视频号','WATCH · WECHAT CHANNELS'))}</article>
+      </div>
+      <div class="dance-archive"><h3>MORE WORKS / ARCHIVE</h3>${[
+        ['https://weixin.qq.com/sph/A9krB2e7zl',copy('舞征高校齐舞比赛冠军','Wuzheng University Group Dance · Champion')],
+        ['https://weixin.qq.com/sph/An0G9EgwnH',copy('OPPO 冠军','OPPO · Champion')],
+        ['https://weixin.qq.com/sph/AvDjm5g3n7',copy('2024 搜狐 KPOP 舞蹈视频翻跳大赛武汉赛区季军','2024 Sohu KPOP Cover Dance Competition, Wuhan · Third place')],
+        ['https://www.bilibili.com/video/BV1fwUGBJEJy?vd_source=c18feebb2deabefbe7c29cf7cfa7dc67',copy('武汉 OPPO 翻跳大赛亚军','Wuhan OPPO Cover Dance Competition · Runner-up')]
+      ].map(([url,label])=>external(url,label)).join('')}</div>
+    </section>
+
+    <section class="dance-section dance-case">
+      ${heading('04','FEATURED PROJECT', '9-PERSON DANCE PROJECT')}
+      <div class="dance-case-top"><h2>${copy('九子夺嫡','Nine dancers.<br>One stage.')}</h2><p class="dance-case-result">2026<br>${copy('搜狐关注流舞蹈大赛','Sohu Follow Feed Dance Competition')}<strong>${copy('冠军','CHAMPION')}</strong></p></div>
+      <figure class="dance-case-photo">${photo('festival',copy('2025 搜狐舞蹈盛典团队合照','Team photo at the 2025 Sohu Dance Festival'))}<figcaption>9 PEOPLE / ONE PROJECT / 2026</figcaption></figure>
+      <div class="dance-case-body"><div><span class="dance-eyebrow">BEYOND THE PERFORMANCE</span><h3>${copy('让九个人的创意，<br>成为同一个舞台。','Bringing nine people<br>onto one stage.')}</h3><p>${copy('除了舞蹈参与，我也承担团队组织与项目执行工作。从九人协调、排练安排到音频剪辑、创意与舞台呈现，再到比赛和行程执行，让多人创意项目真正落地。','Alongside performing, I handled team organization and project execution: coordinating nine people and rehearsals, editing audio, shaping the creative and stage presentation, and managing competition and travel logistics.')}</p>${external(jiuzi,copy('观看完整比赛 · 抖音','WATCH THE PERFORMANCE · DOUYIN'))}</div>
+      <div class="dance-roles"><span class="dance-eyebrow">MY ROLE / ${copy('实际职责','CONTRIBUTIONS')}</span><ol>${[copy('团队组织','Team organization'),copy('9人协调','Nine-person coordination'),copy('排练协调','Rehearsal coordination'),copy('音频剪辑','Audio editing'),copy('创意与舞台呈现','Creative & stage presentation'),copy('比赛及行程执行','Competition & travel execution')].map(r=>`<li>${r}</li>`).join('')}</ol></div></div>
+    </section>
+
+    <section class="dance-section dance-experience">
+      ${heading('05','EXPERIENCE &amp; AWARDS',copy('一些走过的舞台。','A few stages along the way.'))}
+      <div class="dance-experience-grid"><div class="dance-timeline">${awards.map(([year,items])=>`<div class="dance-year"><h3>${year}</h3><ul>${items.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}</div>
+      <div class="dance-scrapbook"><figure>${photo('festival-2025-group',copy('2025 搜狐舞蹈盛典团队合照','Team photo at the 2025 Sohu Dance Festival'))}<figcaption>01 / SOHU DANCE FESTIVAL · 2025</figcaption></figure><figure>${photo('kpop-2025',copy('2025 华中地区 KPOP 比赛获奖照片','Award photo at the 2025 Central China KPOP competition'))}<figcaption>02 / KPOP FESTIVAL · 2025</figcaption></figure><figure>${photo('wuhan-2024',copy('2024 搜狐武汉赛区获奖合照','Award photo at the 2024 Sohu Wuhan competition'))}<figcaption>03 / WUHAN · 2024</figcaption></figure></div></div>
+    </section>
+
+    <section class="dance-section dance-life">
+      ${heading('06','TEACHING &amp; DANCE LIFE',copy('舞台之外，持续练习。','Off stage, still moving.'))}
+      <div class="dance-life-grid"><div><h3>TEACHING</h3><ul>${[copy('KPOP 女团 / 男团','KPOP girl groups / boy groups'),'Hip-hop / SWAG',copy('扒舞与动作拆解','Learning choreography & movement breakdown'),copy('数拍与节奏讲解','Counts & rhythm'),copy('课堂教学','Classroom teaching'),copy('团队排练','Team rehearsals')].map(x=>`<li>${x}</li>`).join('')}</ul></div><div><h3>DANCE PRACTICE</h3><p>${copy('长期参与 KPOP 路演、齐舞比赛、舞队训练及 Workshop / Masterclass。','Regularly involved in KPOP street performances, group dance competitions, crew training and workshops / masterclasses.')}</p><p>${copy('曾参加 Moony、Ving、Kasper、方咏琳、嘉敏、罗雨、面条等舞者课程。','Attended classes and workshops by Moony, Ving, Kasper, Fang Yonglin, Jiamin, Luo Yu, Miantiao and other dancers.')}</p></div><figure>${photo('practice',copy('户外舞蹈练习日常','An outdoor dance practice moment'))}<figcaption>KEEP PRACTICING.</figcaption></figure></div>
+    </section>
+  </article>`;
+  app.querySelectorAll('[data-solo]').forEach(button => {
+    button.onclick = () => {
+      const index = Number(button.dataset.solo), solo = solos[index];
+      const frame = button.closest('[data-solo-frame]');
+      const video = document.createElement('video');
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'none';
+      video.poster = `assets/dance/web/${solo.poster}-poster.jpg`;
+      video.setAttribute('aria-label', solo.title);
+      video.src = `assets/dance/${solo.file}`;
+      video.addEventListener('play', () => app.querySelectorAll('.dance-page video').forEach(other => { if (other !== video) other.pause(); }));
+      video.addEventListener('error', () => {
+        app.querySelector(`[data-solo-status="${index}"]`).textContent = copy('当前浏览器无法播放此原片，兼容的 Web 版本待补充。','This browser cannot play the original format. A compatible web version is pending.');
+      });
+      frame.replaceChildren(video);
+      video.focus();
+      video.play().catch(() => { /* Native controls remain available if autoplay is blocked. */ });
+    };
+  });
+}
+
 function renderVideoContent() {
   location.replace('#/visual');
 }
@@ -891,9 +1139,9 @@ function renderVideoContent() {
 /* ==================================================================
    路由
    ================================================================== */
-const ROUTES = { visual:()=>renderVisual('chooser'), 'visual/video':()=>renderVisual('video'), 'visual/photo':()=>renderVisual('photo'), music:renderArtistContent, planning:()=>renderPanel('planning'),
+const ROUTES = { visual:()=>renderVisual('chooser'), 'visual/video':()=>renderVisual('video'), 'visual/photo':()=>renderVisual('photo'), music:renderArtistContent, planning:renderCreative,
                  creative:()=>{ location.replace('#/planning'); }, video:renderVideoContent,
-                 dance:()=>renderPanel('dance'), about:renderAbout };
+                 dance:renderDance, about:renderAbout, 'about/archive':renderAboutArchive };
 
 function route() {
   closeLightbox();
@@ -901,7 +1149,7 @@ function route() {
   if (!eggTransitionRouting) cleanupEggTransition();
   const key = (location.hash || '#/').replace('#/', '');
   const artistSlug = key.startsWith('artist/') ? key.split('/')[1] : '';
-  document.body.dataset.route = artistSlug ? 'artist' : (ROUTES[key] ? key : 'home');
+  document.body.dataset.route = artistSlug ? 'artist' : (ROUTES[key] ? (key.startsWith('about/') ? 'about' : key) : 'home');
   $$('[data-nav][data-key]').forEach(a => a.classList.remove('active'));
   $('#mobileMenu').classList.remove('open');
   $('#burger').classList.remove('open');
@@ -912,7 +1160,7 @@ function route() {
     if (a) a.classList.add('active');
   } else if (ROUTES[key]) {
     ROUTES[key]();
-    const a = $(`[data-nav][data-key="${key}"]`);
+    const a = $(`[data-nav][data-key="${key.startsWith('about/') ? 'about' : key}"]`);
     if (a) a.classList.add('active');
   } else {
     renderHome();
@@ -945,7 +1193,7 @@ function showLb() {
   $('#lbCount').textContent = lbList.length > 1 ? `${lbIndex + 1} / ${lbList.length}` : '';
   [lbIndex + 1, lbIndex - 1].forEach(i => { if (lbList[i]) { const im = new Image(); im.src = lbList[i]; } });
 }
-function openLightbox(list, idx) {
+function openLightbox(list, idx, archiveTone = false, longArchive = false) {
   lbReturnFocus = document.activeElement;
   lbList = list; lbIndex = idx; showLb();
   $('#lbClose').setAttribute('aria-label', t(UI.close));
@@ -953,13 +1201,21 @@ function openLightbox(list, idx) {
   $('#lbNext').setAttribute('aria-label', t(UI.next));
   lb.setAttribute('aria-label', t(UI.openPhoto));
   $('#lbHint').textContent = t(UI.lbHint);
-  lb.classList.add('open'); document.body.style.overflow = 'hidden';
+  lb.classList.toggle('archive-lightbox', archiveTone); lb.classList.toggle('long-archive-lightbox', longArchive); lb.classList.add('open'); document.body.style.overflow = 'hidden';
   [...document.body.children].forEach(el => { if (el !== lb && el.tagName !== 'SCRIPT') el.inert = true; });
   $('#lbClose').focus();
 }
+app.addEventListener('click', event => {
+  const image = event.target.closest('.creative-lakeside-archive-grid img');
+  if (!image) return;
+  const files = ['assets/creative/lakeside-opening.jpg', 'assets/creative/lakeside-recap.jpg'];
+  openLightbox(files, image.alt.includes('活动回顾') ? 1 : 0, true, true);
+});
+/* 策划案原稿与拍摄脚本属于保密内容：只展示烤进图片里的模糊版，
+   不提供点击放大（灯箱会拿到清晰文件，等于泄密）。 */
 function closeLightbox() {
   if (!lb.classList.contains('open')) return;
-  lb.classList.remove('open'); document.body.style.overflow = '';
+  lb.classList.remove('open','archive-lightbox','long-archive-lightbox'); document.body.style.overflow = '';
   [...document.body.children].forEach(el => { if (el !== lb) el.inert = false; });
   if (lbReturnFocus && lbReturnFocus.isConnected) lbReturnFocus.focus({preventScroll:true});
 }

@@ -17,7 +17,7 @@ const SITE = {
   xhs:       'https://xhslink.cn/o/8NfGdFO6KJ5',
   douyin:    'https://v.douyin.com/aCGdNvOpSUc/',
   danceAcc:  '[DANCE ACCOUNT LINK]',
-  resume:    '',
+  resume:    'assets/resume/徐小媛｜立即到岗.pdf',
   portrait:  '',            // About 页人像：把图片放进 assets/ 后写路径，如 'assets/portrait.jpg'
 };
 
@@ -500,14 +500,14 @@ const VIDEO_CATEGORIES = [
 const VIDEO_WORKS = [
   /* ---- Featured 01：概念 / 挑战 ---- */
   {
-    id:'movies-7days', featured:true, category:'challenge', platform:'xhs',
+    id:'movies-7days', featured:true, category:'challenge', platform:'douyin',
     title:'7天每天看电影写观后感，我坚持下来了吗？',
     titleEn:'7 DAYS OF MOVIES',
     type:{ en:'Challenge', zh:'挑战' },
     intro:{ en:'Watching one film and writing about it, every day for 7 days. There were interruptions — on day 7 I even fell asleep halfway through. The 7-day plan ended up taking 8 days. But that is exactly why it worked: an interruption is not an ending, and doing it imperfectly still counts as continuing.',
             zh:'连续 7 天每天看一部电影并写下观后感。中间有过中断，第 7 天甚至看到一半睡着了，最后这个「7 天计划」花了 8 天才完成。但也正因为这样，我开始觉得——中断不等于结束，做得不好也可以继续。' },
     focus:[ { en:'Concept Development', zh:'概念策划' }, { en:'Storytelling', zh:'故事结构' }, { en:'Personal Experiment', zh:'个人实验' }, { en:'Editing', zh:'剪辑' } ],
-    links:[ { p:'xhs', url:'https://xhslink.cn/o/4EejrvjGDRQ' } ],
+    links:[ { p:'douyin', url:'https://v.douyin.com/p0HT44eF3dk/' } ],
     cover:'assets/video-content/movies-7days-cover.jpg', video:'', ratio:'3/4', mediaRatio:'3/4',
   },
   /* ---- Featured 02：Vlog / Narrative ---- */
