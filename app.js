@@ -327,14 +327,14 @@ function artistProgressionHTML(items, horizontal=false) {
 
 function artistSwitchHTML(activeSlug) {
   return `
-  <nav class="artist-switch" aria-label="Artist case navigation">
+  <div class="artist-switch" role="navigation" aria-label="Artist case navigation">
     ${ARTISTS.map(a => `
       <a class="${a.slug === activeSlug ? 'current' : ''}" href="#/artist/${esc(a.slug)}" aria-current="${a.slug === activeSlug ? 'page' : 'false'}">
         <span>${a.slug === activeSlug ? '🍳' : '🥚'}</span>
         <b>${esc(a.number)}</b>
         <small translate="no">${esc(artistName(a))}</small>
       </a>`).join('')}
-  </nav>`;
+  </div>`;
 }
 
 function artistHeroWorkHTML(work) {
